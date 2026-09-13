@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { dateKey } from "@/lib/dates";
 import {
+  ACTIVITIES,
   currentOrNextGap,
   findGaps,
   isNowInEvent,
@@ -36,7 +37,7 @@ function Home() {
         nowHHmm: hhmm,
         gap,
         restLogs,
-        limit: 20,
+        limit: ACTIVITIES.length,
       }),
     [gap, hhmm, restLogs],
   );
