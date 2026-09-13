@@ -915,19 +915,23 @@ export function recommendActivities(opts: {
     .map((x) => x.a);
 }
 
-export function pickActivityPage(
-  ranked: RestActivity[],
-  page: number,
+export function pickRandomActivities(
+  pool: RestActivity[],
   size = 3,
+  excludeIds: string[] = [],
 ): RestActivity[] {
-  if (ranked.length === 0) return [];
-  if (ranked.length <= size) {
-    const start = ((page % ranked.length) + ranked.length) % ranked.length;
-    return ranked.map((_, i) => ranked[(start + i) % ranked.length]);
+  if (pool.length === 0) return [];
+  const skip = new Set(excludeIds);
+  let source = skip.size ? pool.filter((a) => !skip.has(a.id)) : pool;
+  if (source.length < Math.min(size, pool.length)) source = pool;
+  const shuffled = source.slice();
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const current = shuffled[i]!;
+    shuffled[i] = shuffled[j]!;
+    shuffled[j] = current;
   }
-  const pages = Math.ceil(ranked.length / size);
-  const p = ((page % pages) + pages) % pages;
-  return ranked.slice(p * size, p * size + size);
+  return shuffled.slice(0, Math.min(size, shuffled.length));
 }
 
 export function activityById(id: string) {

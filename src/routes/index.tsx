@@ -1,13 +1,7 @@
 import { useMemo } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { dateKey } from "@/lib/dates";
-import {
-  ACTIVITIES,
-  currentOrNextGap,
-  findGaps,
-  isNowInEvent,
-  recommendActivities,
-} from "@/lib/recommendations";
+import { ACTIVITIES, currentOrNextGap, findGaps, isNowInEvent } from "@/lib/recommendations";
 import { computeRelaxation } from "@/lib/relaxation";
 import { useAppStore } from "@/lib/store";
 import { useDayEvents, useDayRests } from "@/hooks/use-day-data";
@@ -31,17 +25,6 @@ function Home() {
   const gap = currentOrNextGap(gaps, hhmm);
   const working = isNowInEvent(events, hhmm);
 
-  const recs = useMemo(
-    () =>
-      recommendActivities({
-        nowHHmm: hhmm,
-        gap,
-        restLogs,
-        limit: ACTIVITIES.length,
-      }),
-    [gap, hhmm, restLogs],
-  );
-
   const relax = computeRelaxation({
     events,
     restLogs,
@@ -61,7 +44,7 @@ function Home() {
         hasEvents={hasEvents}
       />
       <RestCards
-        activities={recs}
+        activities={ACTIVITIES}
         gap={gap}
         working={working}
         hasEvents={hasEvents}
