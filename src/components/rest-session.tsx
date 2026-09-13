@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { activityById } from "@/lib/recommendations";
+import { playRestChime, primeRestChime, stopRestChime } from "@/lib/rest-chime";
 import { MOOD_SRC } from "@/lib/relaxation";
 import { useAppStore } from "@/lib/store";
 import { KindIcon } from "@/components/kind-icon";
@@ -11,21 +12,33 @@ export function RestSession() {
   const completeRest = useAppStore((s) => s.completeRest);
   const cancelRest = useAppStore((s) => s.cancelRest);
   const [now, setNow] = useState(() => Date.now());
+  const finishing = useRef(false);
 
   useEffect(() => {
-    if (!active) return;
+    if (!active) {
+      finishing.current = false;
+      return;
+    }
+    primeRestChime();
     const id = window.setInterval(() => setNow(Date.now()), 250);
     return () => window.clearInterval(id);
   }, [active]);
 
+  const finish = () => {
+    if (finishing.current) return;
+    finishing.current = true;
+    playRestChime();
+    completeRest();
+    toast.success("这段休息完成了");
+  };
+
   useEffect(() => {
     if (!active) return;
-    const end = new Date(active.startedAt).getTime() + active.durationMin * 60_000;
-    if (now >= end) {
-      completeRest();
-      toast.success("这段休息完成了");
-    }
-  }, [active, now, completeRest]);
+    const endAt = new Date(active.startedAt).getTime() + active.durationMin * 60_000;
+    if (now >= endAt) finish();
+    // finish reads a ref; we only want to fire when the clock crosses the end.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, now]);
 
   if (!active) return null;
   const activity = activityById(active.activityId);
@@ -77,16 +90,17 @@ export function RestSession() {
         </div>
 
         <div className="mt-auto flex gap-2 pt-6">
-          <Button variant="secondary" className="min-h-12 flex-1" onClick={cancelRest}>
-            先结束
-          </Button>
           <Button
+            variant="secondary"
             className="min-h-12 flex-1"
             onClick={() => {
-              completeRest();
-              toast.success("这段休息完成了");
+              stopRestChime();
+              cancelRest();
             }}
           >
+            先结束
+          </Button>
+          <Button className="min-h-12 flex-1" onClick={finish}>
             完成休息
           </Button>
         </div>
