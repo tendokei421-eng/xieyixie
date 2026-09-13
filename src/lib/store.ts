@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import type { ActiveRest, CalendarEvent, RestLog } from "./types";
 import { dateKey, hhmmOf, minutesOf, nowHHmm } from "./dates";
+import { pruneReminderKeys } from "./reminders";
 import { uid } from "./utils";
 
 type EditorState =
@@ -16,6 +17,8 @@ type AppState = {
   restLogs: RestLog[];
   activeRest: ActiveRest | null;
   editor: EditorState;
+  seenReminderKeys: string[];
+  notifiedReminderKeys: string[];
   setHydrated: (v: boolean) => void;
   setSelectedDate: (date: string) => void;
   addEvent: (e: CalendarEvent) => void;
@@ -33,6 +36,8 @@ type AppState = {
   completeRest: () => void;
   cancelRest: () => void;
   restLogsOn: (date: string) => RestLog[];
+  markReminderSeen: (key: string) => void;
+  markReminderNotified: (key: string) => void;
 };
 
 function defaultDraft(date: string): CalendarEvent {
@@ -59,6 +64,8 @@ export const useAppStore = create<AppState>()(
       restLogs: [],
       activeRest: null,
       editor: { open: false },
+      seenReminderKeys: [],
+      notifiedReminderKeys: [],
       setHydrated: (v) => set({ hydrated: v }),
       setSelectedDate: (date) => set({ selectedDate: date }),
       addEvent: (e) => set({ events: [...get().events, e] }),
@@ -172,6 +179,20 @@ export const useAppStore = create<AppState>()(
       },
       cancelRest: () => set({ activeRest: null }),
       restLogsOn: (date) => get().restLogs.filter((l) => l.date === date),
+      markReminderSeen: (key) =>
+        set({
+          seenReminderKeys: pruneReminderKeys([
+            ...get().seenReminderKeys.filter((k) => k !== key),
+            key,
+          ]),
+        }),
+      markReminderNotified: (key) =>
+        set({
+          notifiedReminderKeys: pruneReminderKeys([
+            ...get().notifiedReminderKeys.filter((k) => k !== key),
+            key,
+          ]),
+        }),
     }),
     {
       name: "xieyixie-v2",
@@ -182,6 +203,8 @@ export const useAppStore = create<AppState>()(
         events: s.events,
         restLogs: s.restLogs,
         activeRest: s.activeRest,
+        seenReminderKeys: s.seenReminderKeys,
+        notifiedReminderKeys: s.notifiedReminderKeys,
       }),
     },
   ),

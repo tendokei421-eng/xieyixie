@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { useAppStore } from "@/lib/store";
 import { useLockBody, useVisualViewport } from "@/hooks/use-mobile";
 import { EventEditor } from "@/components/event-editor";
+import { ReminderPopup } from "@/components/reminder-popup";
 import { RestSession } from "@/components/rest-session";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -27,6 +28,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
       </div>
       <EventEditor />
+      <ReminderPopup />
       <RestSession />
     </div>
   );

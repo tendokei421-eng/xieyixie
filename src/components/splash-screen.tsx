@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { MOOD_SRC } from "@/lib/relaxation";
+import { publicUrl } from "@/lib/asset";
 
 function stageLabel(progress: number) {
   if (progress < 28) return "唤醒中";
@@ -27,11 +27,12 @@ export function SplashScreen({
     >
       <div className="flex flex-col items-center px-6">
         <img
-          src={MOOD_SRC.rest}
+          src={publicUrl("/icon-192.png")}
           alt=""
-          className="buddy-float h-40 w-auto object-contain"
+          draggable={false}
+          className="size-28 rounded-3xl object-cover shadow-card"
         />
-        <p className="mt-2 font-display text-2xl font-semibold tracking-tight">歇一歇</p>
+        <p className="mt-4 font-display text-2xl font-semibold tracking-tight">歇一歇</p>
         <p className="mt-1 text-sm text-muted">{stageLabel(pct)}</p>
 
         <div className="mt-6 w-44">
