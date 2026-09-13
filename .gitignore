@@ -1,0 +1,32 @@
+# dependencies
+node_modules/
+
+# build output
+.vercel/
+.nitro/
+.output/
+.tanstack/
+dist/
+.cache/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# logs and OS
+*.log
+.DS_Store
+Thumbs.db
+
+# local databases
+*.db
+pglite-debug*
+
+# sandbox / QA (not part of the app)
+screenshots/
+artifacts/
+attachments/
+.grok/
+.project_id
+.node_modules.lock
