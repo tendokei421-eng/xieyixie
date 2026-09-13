@@ -1,10 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { MOOD_SRC } from "@/lib/relaxation";
-import { publicUrl } from "@/lib/asset";
 import { useAppStore } from "@/lib/store";
 import { SplashScreen } from "@/components/splash-screen";
 
-const BUDDY_SRCS = [...Object.values(MOOD_SRC), publicUrl("/icon-192.png")];
+const BUDDY_SRCS = Object.values(MOOD_SRC);
 const MIN_SPLASH_MS = 900;
 const EXIT_MS = 280;
 const BAR_SETTLE_MS = 360;
