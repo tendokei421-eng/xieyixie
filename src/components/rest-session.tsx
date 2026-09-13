@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { activityById } from "@/lib/recommendations";
+import { MOOD_SRC } from "@/lib/relaxation";
 import { useAppStore } from "@/lib/store";
 import { KindIcon } from "@/components/kind-icon";
 import { Button } from "@/components/ui/button";
@@ -50,7 +51,7 @@ export function RestSession() {
         </div>
         <div className="mx-auto my-4 h-36 w-36">
           <img
-            src="/buddy/rest.png"
+            src={MOOD_SRC.rest}
             alt=""
             draggable={false}
             className="buddy-float h-full w-full object-contain"

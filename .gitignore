@@ -8,6 +8,7 @@ node_modules/
 .tanstack/
 dist/
 .cache/
+pages-dist/
 
 # env / secrets
 .env

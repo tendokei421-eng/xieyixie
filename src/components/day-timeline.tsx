@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Copy, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { durationLabel, minutesOf } from "@/lib/dates";
 import { currentOrNextGap, findGaps } from "@/lib/recommendations";
+import { MOOD_SRC } from "@/lib/relaxation";
 import type { CalendarEvent, Gap } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -51,7 +52,7 @@ export function DayTimeline({
     return (
       <div className="rounded-xl bg-surface px-5 py-8 text-center shadow-card">
         <img
-          src="/buddy/calm.png"
+          src={MOOD_SRC.calm}
           alt=""
           draggable={false}
           className="mx-auto h-24 w-auto object-contain"

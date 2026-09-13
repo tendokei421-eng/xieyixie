@@ -145,7 +145,9 @@ function authPopupPlugin(): Plugin {
 // `0.0.0.0:8080` is the live-preview contract — don't change host/port.
 // The dev server starts once `src/router.tsx` and `src/routes/` exist — see
 // AGENTS.md § "First scaffold".
-export default defineConfig(({ command, isPreview }) => ({
+export default defineConfig(({ command, isPreview }) => {
+  const isGithubPages = process.env.DEPLOY_TARGET === "github-pages";
+  return {
   server: {
     host: "0.0.0.0",
     port: 8080,
@@ -156,6 +158,7 @@ export default defineConfig(({ command, isPreview }) => ({
     port: 8081,
     strictPort: true,
   },
+  base: isGithubPages ? "/xieyixie/" : "/",
   resolve: { tsconfigPaths: true },
   plugins: [
     pgliteBootstrapPlugin(),
@@ -166,9 +169,18 @@ export default defineConfig(({ command, isPreview }) => ({
     // PWA head + ?install=1 tutorial page; runs before Start/Nitro.
     grokPwaPlugin(),
     tailwindcss(),
-    tanstackStart(),
+    tanstackStart(
+      isGithubPages
+        ? {
+            spa: { enabled: true },
+            prerender: { enabled: true, crawlLinks: true },
+          }
+        : {},
+    ),
     ...(command === "build" || isPreview
-      ? [
+      ? isGithubPages
+        ? []
+        : [
           nitro({
             preset: "vercel",
             // Auto-registers server/middleware/* (the PWA install page +
@@ -180,4 +192,5 @@ export default defineConfig(({ command, isPreview }) => ({
       : []),
     viteReact(),
   ],
-}));
+};
+});

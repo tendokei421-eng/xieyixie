@@ -1,5 +1,6 @@
 import type { CalendarEvent, Mood, RestLog } from "./types";
 import { minutesOf } from "./dates";
+import { publicUrl } from "./asset";
 
 export function computeRelaxation(opts: {
   events: CalendarEvent[];
@@ -87,9 +88,9 @@ function moodCopy(mood: Mood, working: boolean, resting: boolean) {
 }
 
 export const MOOD_SRC: Record<Mood, string> = {
-  tired: "/buddy/tired.png",
-  calm: "/buddy/calm.png",
-  spark: "/buddy/spark.png",
-  rest: "/buddy/rest.png",
-  happy: "/buddy/happy.png",
+  tired: publicUrl("/buddy/tired.png"),
+  calm: publicUrl("/buddy/calm.png"),
+  spark: publicUrl("/buddy/spark.png"),
+  rest: publicUrl("/buddy/rest.png"),
+  happy: publicUrl("/buddy/happy.png"),
 };
