@@ -1,11 +1,15 @@
-import { Clock } from "lucide-react";
+import { useState } from "react";
+import { Clock, RefreshCw } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { durationLabel } from "@/lib/dates";
-import { kindLabel } from "@/lib/recommendations";
+import { kindLabel, pickActivityPage } from "@/lib/recommendations";
+import { cn } from "@/lib/utils";
 import type { Gap, RestActivity } from "@/lib/types";
 import { KindIcon } from "@/components/kind-icon";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+
+const PAGE_SIZE = 3;
 
 export function RestCards({
   activities,
@@ -20,28 +24,53 @@ export function RestCards({
   hasEvents: boolean;
   onStart: (activity: RestActivity) => void;
 }) {
+  const [page, setPage] = useState(0);
+  const [spinning, setSpinning] = useState(false);
+  const visible = pickActivityPage(activities, page, PAGE_SIZE);
+  const canShuffle = activities.length > 1;
+
+  const shuffle = () => {
+    if (!canShuffle) return;
+    setPage((p) => p + 1);
+    setSpinning(true);
+    window.setTimeout(() => setSpinning(false), 420);
+  };
+
   return (
     <section>
-      <div className="mb-3">
-        <h2 className="font-display text-lg font-semibold">现在适合歇一歇</h2>
-        <p className="mt-0.5 text-sm leading-relaxed text-muted">
-          {!hasEvents
-            ? "还没有日程。先按现在的节奏歇一下。"
-            : working
-              ? "这段日程结束后再离开工位。先看看下一个空档。"
-              : gap
-                ? `空闲 ${gap.start} – ${gap.end} · ${durationLabel(gap.minutes)}`
-                : "根据今天的节奏为你挑选"}
-        </p>
+      <div className="mb-3 flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="font-display text-lg font-semibold">现在适合歇一歇</h2>
+          <p className="mt-0.5 text-sm leading-relaxed text-muted">
+            {!hasEvents
+              ? "还没有日程。先按现在的节奏歇一下。"
+              : working
+                ? "这段日程结束后再离开工位。先看看下一个空档。"
+                : gap
+                  ? `空闲 ${gap.start} – ${gap.end} · ${durationLabel(gap.minutes)}`
+                  : "根据今天的节奏为你挑选"}
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="secondary"
+          size="pill"
+          className="shrink-0"
+          disabled={!canShuffle}
+          onClick={shuffle}
+        >
+          <RefreshCw className={cn("size-4", spinning && "animate-spin")} />
+          换一换
+        </Button>
       </div>
 
-      {activities.length === 0 ? (
+      {visible.length === 0 ? (
         <p className="rounded-xl bg-surface px-4 py-6 text-center text-sm text-muted shadow-card">
           这一段排得很满。下一处空隙再歇。
         </p>
       ) : (
-        <ul className="flex flex-col gap-2">
-          {activities.map((a) => (
+        <ul key={page} className="flex flex-col gap-2">
+          {visible.map((a) => (
             <li key={a.id} className="flex gap-3 rounded-xl bg-surface p-3.5 shadow-card">
               <div className="grid size-11 shrink-0 place-items-center rounded-md bg-primary-soft text-primary">
                 <KindIcon kind={a.kind} className="size-5" />

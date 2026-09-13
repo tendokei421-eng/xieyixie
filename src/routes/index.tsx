@@ -36,7 +36,7 @@ function Home() {
         nowHHmm: hhmm,
         gap,
         restLogs,
-        limit: 3,
+        limit: 20,
       }),
     [gap, hhmm, restLogs],
   );

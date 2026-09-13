@@ -208,10 +208,24 @@ export function recommendActivities(opts: {
       a,
       s: scoreActivity(a, { tod, gapMin, doneIds }),
     }))
-    .filter((x) => x.s > 0)
-    .sort((x, y) => y.s - x.s)
+    .sort((x, y) => y.s - x.s || x.a.id.localeCompare(y.a.id))
     .slice(0, opts.limit ?? 3)
     .map((x) => x.a);
+}
+
+export function pickActivityPage(
+  ranked: RestActivity[],
+  page: number,
+  size = 3,
+): RestActivity[] {
+  if (ranked.length === 0) return [];
+  if (ranked.length <= size) {
+    const start = ((page % ranked.length) + ranked.length) % ranked.length;
+    return ranked.map((_, i) => ranked[(start + i) % ranked.length]);
+  }
+  const pages = Math.ceil(ranked.length / size);
+  const p = ((page % pages) + pages) % pages;
+  return ranked.slice(p * size, p * size + size);
 }
 
 export function activityById(id: string) {
