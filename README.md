@@ -35,7 +35,12 @@ GitHub 会把软件发布成一个网页。第一次需要你在仓库里打开 
 
 以后每次把代码推到 `main`，GitHub 会自动重新发布。
 
-这不是应用商店里的安装包（不走 App Store / 应用宝）。用 GitHub 能做到的「独立 App」，就是加到主屏幕的这种。
+也可以打成安卓安装包（`.apk`），步骤见 [docs/ANDROID.md](docs/ANDROID.md)。
+
+- 在 GitHub **Actions → 打包安卓 APK** 里点一次，就能下载调试版
+- 本机用 Android Studio 可以打带签名的正式包
+
+iPhone 仍用 Safari「添加到主屏幕」。这不是应用商店上架包（不走 App Store / 应用宝）。
 
 
 
@@ -50,5 +55,7 @@ src/routes/          页面（歇一歇、今天）
 src/components/      小人、日程表、休息倒计时、底部导航
 src/lib/             日程、空隙、休息建议、松弛度
 public/buddy/        五种表情的透明 PNG
-.github/workflows/   自动发布到 GitHub Pages
+.github/workflows/   自动发布到 GitHub Pages、打包安卓 APK
+docs/ANDROID.md      把网页打成可安装的安卓 App
+capacitor.config.ts  安卓包名与网页目录
 ```

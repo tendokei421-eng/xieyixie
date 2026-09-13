@@ -1,0 +1,50 @@
+name: 打包安卓 APK
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - run: npm ci
+
+      - name: 安装 Capacitor
+        run: npm install --no-save @capacitor/core@^7.4.3 @capacitor/cli@^7.4.3 @capacitor/android@^7.4.3
+
+      - name: 构建写入安装包的网页
+        run: npm run build:capacitor
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: 安装 Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: 生成安卓工程并同步网页
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: 编译可安装的调试包
+        working-directory: android
+        run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
+
+      - name: 上传 APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: xieyixie-debug
+          path: android/app/build/outputs/apk/debug/*.apk
+          if-no-files-found: error
