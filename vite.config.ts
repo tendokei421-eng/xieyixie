@@ -147,6 +147,8 @@ function authPopupPlugin(): Plugin {
 // AGENTS.md § "First scaffold".
 export default defineConfig(({ command, isPreview }) => {
   const isGithubPages = process.env.DEPLOY_TARGET === "github-pages";
+  const isCapacitor = process.env.DEPLOY_TARGET === "capacitor";
+  const isStaticSpa = isGithubPages || isCapacitor;
   return {
   server: {
     host: "0.0.0.0",
@@ -158,6 +160,7 @@ export default defineConfig(({ command, isPreview }) => {
     port: 8081,
     strictPort: true,
   },
+  // GitHub Pages lives at /xieyixie/. The Capacitor WebView serves from /.
   base: isGithubPages ? "/xieyixie/" : "/",
   resolve: { tsconfigPaths: true },
   plugins: [
@@ -170,7 +173,7 @@ export default defineConfig(({ command, isPreview }) => {
     grokPwaPlugin(),
     tailwindcss(),
     tanstackStart(
-      isGithubPages
+      isStaticSpa
         ? {
             spa: { enabled: true },
             prerender: { enabled: true, crawlLinks: true },
@@ -178,7 +181,7 @@ export default defineConfig(({ command, isPreview }) => {
         : {},
     ),
     ...(command === "build" || isPreview
-      ? isGithubPages
+      ? isStaticSpa
         ? []
         : [
           nitro({
