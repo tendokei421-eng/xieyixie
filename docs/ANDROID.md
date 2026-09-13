@@ -15,7 +15,7 @@
 不需要本机安装 Android Studio。打出来的是 **debug 包**，可以自己装，不适合长期对外分发。
 
 1. 把最新代码推到 `main`。
-2. 打开 [Actions](https://github.com/tendokei421-eng/xieyixie/actions)〃
+2. 打开 [Actions](https://github.com/tendokei421-eng/xieyixie/actions)。
 3. 左侧选 **打包安卓 APK** → **Run workflow** → 选 `main` → Run。
 4. 等任务变绿，打开那一次运行，下载产物 **xieyixie-debug**。
 5. 解压得到 `.apk`，传到安卓手机打开安装。
