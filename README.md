@@ -37,32 +37,7 @@ GitHub 会把软件发布成一个网页。第一次需要你在仓库里打开 
 
 这不是应用商店里的安装包（不走 App Store / 应用宝）。用 GitHub 能做到的「独立 App」，就是加到主屏幕的这种。
 
-## 获取代码
 
-```bash
-git clone https://github.com/tendokei421-eng/xieyixie.git
-cd xieyixie
-```
-
-需要 [Node.js](https://nodejs.org/) 22 或以上。
-
-```bash
-npm install
-npm run dev
-```
-
-浏览器打开终端里提示的地址即可。生产构建：
-
-```bash
-npm run build
-npm run preview
-```
-
-发布到 GitHub Pages（本地预演）：
-
-```bash
-npm run build:pages
-```
 
 ## 技术栈
 
