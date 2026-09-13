@@ -4,6 +4,8 @@
 
 这是一款**面向手机的 Web 应用**（PWA）：一屏高度、底部导航、大按钮，可添加到主屏幕当 App 用。日程保存在本机浏览器，不需要登录。
 
+仓库：https://github.com/tendokei421-eng/xieyixie
+
 ## 能做什么
 
 - **歇一歇**：看今天的松弛度，小人表情会跟着变；按当前节奏推荐一小段休息
@@ -20,7 +22,12 @@
 
 加到主屏幕后，会以独立窗口打开，底栏和安全区按手机来排。
 
-## 本地运行
+## 获取代码
+
+```bash
+git clone https://github.com/tendokei421-eng/xieyixie.git
+cd xieyixie
+```
 
 需要 [Node.js](https://nodejs.org/) 22 或以上。
 
@@ -29,7 +36,7 @@ npm install
 npm run dev
 ```
 
-浏览器打开提示的地址即可。生产构建：
+浏览器打开终端里提示的地址即可。生产构建：
 
 ```bash
 npm run build
