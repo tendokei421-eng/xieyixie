@@ -12,9 +12,14 @@ export const Route = createRootRoute({
   head: () => ({
     meta: [
       { charSet: "utf-8" },
-      { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
+      {
+        name: "viewport",
+        content:
+          "width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content",
+      },
       { title: APP_NAME },
       { name: "theme-color", content: "#4b9ed1" },
+      { name: "format-detection", content: "telephone=no" },
       {
         name: "description",
         content: "工作中，记得歇一歇。安排日程，在空闲里晒太阳、看风景、慢慢呼吸。",
@@ -52,6 +57,7 @@ function Root() {
           </HydrateStore>
           <Toaster
             position="top-center"
+            offset="calc(env(safe-area-inset-top, 0px) + 12px)"
             toastOptions={{
               className: "font-sans !bg-surface !text-fg !border-border",
             }}

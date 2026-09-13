@@ -62,7 +62,7 @@ export function BuddyCard({
       <div className="relative mx-auto mt-2 grid place-items-center">
         <svg
           viewBox="0 0 128 128"
-          className="absolute size-52 -rotate-90 text-primary"
+          className="absolute size-44 -rotate-90 text-primary"
           aria-hidden
         >
           <circle
@@ -87,12 +87,13 @@ export function BuddyCard({
             className="text-primary transition-[stroke-dashoffset] duration-500 ease-smooth-out"
           />
         </svg>
-        <div className="relative h-44 w-44">
+        <div className="relative h-36 w-36">
           {MOODS.map((m) => (
             <img
               key={m}
               src={MOOD_SRC[m]}
               alt=""
+              draggable={false}
               className={cn(
                 "absolute inset-0 h-full w-full object-contain object-bottom transition-opacity duration-500 ease-out",
                 m === mood ? "buddy-float opacity-100" : "opacity-0",
@@ -108,7 +109,7 @@ export function BuddyCard({
       </div>
 
       <div className="relative mt-4 flex items-center justify-center">
-        <span className="inline-flex h-9 items-center gap-1.5 rounded-full bg-accent-soft px-3 text-sm font-medium text-accent-fg">
+        <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-accent-soft px-3 text-sm font-medium text-accent-fg">
           <Activity className="size-3.5" />
           今天已歇 {restCount} 次
         </span>

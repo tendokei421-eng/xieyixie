@@ -127,7 +127,9 @@ export function HydrateStore({ children }: { children: ReactNode }) {
   return (
     <>
       {visible ? <SplashScreen progress={progress} leaving={leaving} /> : null}
-      <div aria-hidden={visible && !leaving ? true : undefined}>{children}</div>
+      <div className="h-full" aria-hidden={visible && !leaving ? true : undefined}>
+        {children}
+      </div>
     </>
   );
 }

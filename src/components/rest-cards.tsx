@@ -24,7 +24,7 @@ export function RestCards({
     <section>
       <div className="mb-3">
         <h2 className="font-display text-lg font-semibold">现在适合歇一歇</h2>
-        <p className="mt-0.5 text-xs leading-relaxed text-muted">
+        <p className="mt-0.5 text-sm leading-relaxed text-muted">
           {!hasEvents
             ? "还没有日程。先按现在的节奏歇一下。"
             : working
@@ -48,16 +48,16 @@ export function RestCards({
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <h3 className="text-sm font-semibold">{a.title}</h3>
+                  <h3 className="text-base font-semibold">{a.title}</h3>
                   <Badge tone="blue">{kindLabel(a.kind)}</Badge>
                 </div>
-                <p className="mt-1 text-xs leading-relaxed text-muted">{a.detail}</p>
-                <div className="mt-2.5 flex items-center justify-between gap-2">
-                  <span className="inline-flex items-center gap-1 text-xs text-subtle">
-                    <Clock className="size-3" />
+                <p className="mt-1 text-sm leading-relaxed text-muted">{a.detail}</p>
+                <div className="mt-3 flex flex-col gap-2">
+                  <span className="inline-flex items-center gap-1 text-sm text-subtle">
+                    <Clock className="size-3.5" />
                     {durationLabel(a.durationMin)}
                   </span>
-                  <Button size="sm" onClick={() => onStart(a)}>
+                  <Button size="lg" className="w-full" onClick={() => onStart(a)}>
                     开始休息
                   </Button>
                 </div>
@@ -68,9 +68,9 @@ export function RestCards({
       )}
 
       {!hasEvents ? (
-        <p className="mt-3 text-center text-xs text-muted">
+        <p className="mt-3 text-center text-sm text-muted">
           想按空闲来排？去{" "}
-          <Link to="/today" className="font-medium text-primary">
+          <Link to="/today" className="inline-flex min-h-11 items-center font-medium text-primary">
             今天
           </Link>{" "}
           添加日程。

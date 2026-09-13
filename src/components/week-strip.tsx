@@ -36,7 +36,7 @@ export function WeekStrip({
         >
           <ChevronLeft className="size-5" />
         </button>
-        <p className="text-xs font-medium text-muted">{rangeLabel}</p>
+        <p className="text-sm font-medium text-muted">{rangeLabel}</p>
         <button
           type="button"
           aria-label="下一周"
@@ -56,7 +56,7 @@ export function WeekStrip({
               type="button"
               onClick={() => onSelect(key)}
               className={cn(
-                "flex min-h-11 flex-col items-center justify-center rounded-md px-0.5 py-1.5 transition-colors duration-150",
+                "flex min-h-12 flex-col items-center justify-center rounded-md px-0.5 py-1.5 transition-colors duration-150",
                 isSel
                   ? "bg-primary text-primary-fg"
                   : isToday
@@ -67,7 +67,7 @@ export function WeekStrip({
               <span className={cn("text-xs", isSel ? "text-primary-fg/80" : "text-muted")}>
                 {weekdayLabel(key)}
               </span>
-              <span className="mt-0.5 text-sm font-semibold tabular-nums leading-none">
+              <span className="mt-0.5 text-base font-semibold tabular-nums leading-none">
                 {format(parseDateKey(key), "d")}
               </span>
             </button>

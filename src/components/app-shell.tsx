@@ -2,17 +2,25 @@ import type { ReactNode } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { CalendarDays, Leaf } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAppStore } from "@/lib/store";
+import { useLockBody, useVisualViewport } from "@/hooks/use-mobile";
 import { EventEditor } from "@/components/event-editor";
 import { RestSession } from "@/components/rest-session";
 
 export function AppShell({ children }: { children: ReactNode }) {
-  return (
-    <div className="min-h-svh bg-bg text-fg">
-      <div className="mx-auto flex min-h-svh max-w-lg flex-col">
-        <main className="flex-1 px-4 pb-28 pt-[max(1rem,env(safe-area-inset-top))]">{children}</main>
+  const overlayOpen = useAppStore((s) => s.editor.open || !!s.activeRest);
+  const { keyboardOpen } = useVisualViewport();
+  useLockBody(overlayOpen);
 
-        <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-surface/95 px-6 py-2 pb-[max(0.5rem,env(safe-area-inset-bottom))] backdrop-blur-md">
-          <div className="mx-auto flex max-w-md items-center justify-around">
+  return (
+    <div className="app-frame">
+      <div className="app-col">
+        <main className="app-main">{children}</main>
+        <nav
+          className={cn("app-tabbar", keyboardOpen && "hidden")}
+          aria-label="主导航"
+        >
+          <div className="flex items-stretch justify-around px-2 pt-1">
             <NavLink to="/" icon={Leaf} label="歇一歇" />
             <NavLink to="/today" icon={CalendarDays} label="今天" />
           </div>
@@ -39,11 +47,11 @@ function NavLink({
     <Link
       to={to}
       className={cn(
-        "inline-flex min-w-20 flex-col items-center gap-0.5 rounded-md px-3 py-1 text-xs font-medium transition-colors duration-150",
-        active ? "text-primary" : "text-muted hover:text-fg",
+        "inline-flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 rounded-md px-3 py-2 text-xs font-medium transition-colors duration-150",
+        active ? "bg-primary-soft text-primary" : "text-muted hover:text-fg",
       )}
     >
-      <Icon className={cn("size-5", active && "text-primary")} />
+      <Icon className="size-6" />
       {label}
     </Link>
   );

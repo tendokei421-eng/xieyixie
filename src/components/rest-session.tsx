@@ -37,21 +37,22 @@ export function RestSession() {
   const progress = 1 - remainingMs / (active.durationMin * 60_000);
 
   return (
-    <div className="fixed inset-0 z-50 grid place-items-end bg-fg/35 p-4 md:place-items-center">
+    <div className="rest-screen">
       <div
         role="dialog"
         aria-modal
         aria-labelledby="rest-title"
-        className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-card-hover"
+        className="mx-auto flex min-h-0 w-full max-w-md flex-1 flex-col px-5 pt-[max(1.5rem,env(safe-area-inset-top,0px))] pb-[max(1.25rem,env(safe-area-inset-bottom,0px))]"
       >
         <div className="flex items-center gap-2 text-sm text-muted">
           {activity ? <KindIcon kind={activity.kind} /> : null}
           正在歇一歇
         </div>
-        <div className="mx-auto my-3 h-40 w-40">
+        <div className="mx-auto my-4 h-36 w-36">
           <img
             src="/buddy/rest.png"
             alt=""
+            draggable={false}
             className="buddy-float h-full w-full object-contain"
           />
         </div>
@@ -64,22 +65,22 @@ export function RestSession() {
           </p>
         ) : null}
 
-        <p className="mt-5 text-center font-display text-4xl font-semibold tabular-nums tracking-tight">
+        <p className="mt-8 text-center font-display text-5xl font-semibold tabular-nums tracking-tight">
           {String(m).padStart(2, "0")}:{String(s).padStart(2, "0")}
         </p>
-        <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-2">
+        <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-surface-2">
           <div
             className="h-full rounded-full bg-primary transition-[width] duration-200 ease-linear"
             style={{ width: `${Math.min(100, progress * 100)}%` }}
           />
         </div>
 
-        <div className="mt-5 flex gap-2">
-          <Button variant="secondary" className="flex-1" onClick={cancelRest}>
+        <div className="mt-auto flex gap-2 pt-6">
+          <Button variant="secondary" className="min-h-12 flex-1" onClick={cancelRest}>
             先结束
           </Button>
           <Button
-            className="flex-1"
+            className="min-h-12 flex-1"
             onClick={() => {
               completeRest();
               toast.success("这段休息完成了");
