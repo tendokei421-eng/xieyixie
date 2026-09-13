@@ -5,7 +5,7 @@
 这是一款**面向手机的 Web 应用**（PWA）：一屏高度、底部导航、大按钮，可添加到主屏幕当 App 用。日程保存在本机浏览器，不需要登录。
 
 - 源码：https://github.com/tendokei421-eng/xieyixie
-- 独立使用：https://tendokei421-eng.github.io/xieyixie/
+- 独立使用（开启 Pages 后）：https://tendokei421-eng.github.io/xieyixie/
 
 ## 能做什么
 
@@ -16,14 +16,26 @@
 
 ## 在手机上独立使用
 
-用手机浏览器打开 [歇一歇](https://tendokei421-eng.github.io/xieyixie/)：
+GitHub 会把软件发布成一个网页。第一次需要你在仓库里打开 Pages：
 
-1. **iPhone / iPad**（Safari）：分享 → 添加到主屏幕
-2. **Android**（Chrome）：菜单 ⋮ → 安装应用 / 添加到主屏幕
+1. 打开 [Pages 设置](https://github.com/tendokei421-eng/xieyixie/settings/pages)
+2. **Build and deployment → Source** 选 **GitHub Actions**
+3. 打开 [Actions](https://github.com/tendokei421-eng/xieyixie/actions) → **发布歇一歇** → 重新运行最近一次
 
-加到主屏幕后，会以独立窗口打开，没有浏览器地址栏，底栏和安全区按手机来排。日程只存在这台手机上。
+完成后用手机浏览器打开：
 
-每次把代码推到 `main` 分支，GitHub 会自动重新发布这个页面。
+**https://tendokei421-eng.github.io/xieyixie/**
+
+然后：
+
+- **iPhone / iPad**（Safari）：分享 → 添加到主屏幕
+- **Android**（Chrome）：菜单 ⋮ → 安装应用 / 添加到主屏幕
+
+加到主屏幕后，会以独立窗口打开，没有浏览器地址栏。日程只存在这台手机上。
+
+以后每次把代码推到 `main`，GitHub 会自动重新发布。
+
+这不是应用商店里的安装包（不走 App Store / 应用宝）。用 GitHub 能做到的「独立 App」，就是加到主屏幕的这种。
 
 ## 获取代码
 
