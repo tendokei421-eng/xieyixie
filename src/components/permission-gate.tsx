@@ -36,12 +36,10 @@ export function PermissionGate() {
   const allow = async () => {
     if (busy) return;
     setBusy(true);
-    try {
-      await enableAppPermissions();
-    } finally {
-      markAsked();
-      setBusy(false);
-    }
+    markAsked();
+    window.setTimeout(() => {
+      void enableAppPermissions();
+    }, 400);
   };
 
   return (
@@ -58,7 +56,7 @@ export function PermissionGate() {
             开启休息提醒
           </Dialog.Title>
           <p id="perm-desc" className="mt-1 text-sm leading-relaxed text-muted">
-            第一次使用需要打开下面几项。点允许后会马上向系统申请并开启。
+            点允许后，这个说明会先关掉，接着手机系统会再问一次「是否允许通知」。
           </p>
           <ul className="mt-4 flex flex-col gap-3">
             {ITEMS.map((item) => (
