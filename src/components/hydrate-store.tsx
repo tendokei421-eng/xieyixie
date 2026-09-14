@@ -4,10 +4,25 @@ import { useAppStore } from "@/lib/store";
 import { SplashScreen } from "@/components/splash-screen";
 
 const BUDDY_SRCS = Object.values(MOOD_SRC);
-const MIN_SPLASH_MS = 900;
 const EXIT_MS = 280;
 const BAR_SETTLE_MS = 360;
-const HARD_CAP_MS = 5000;
+const HARD_CAP_MS = 8000;
+
+function isNativeApp() {
+  if (typeof window === "undefined") return false;
+  const cap = (window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } })
+    .Capacitor;
+  return cap?.isNativePlatform?.() === true;
+}
+
+function hideNativeSplash() {
+  const cap = (
+    window as unknown as {
+      Capacitor?: { Plugins?: { SplashScreen?: { hide?: () => Promise<void> } } };
+    }
+  ).Capacitor;
+  void cap?.Plugins?.SplashScreen?.hide?.();
+}
 
 function sleep(ms: number) {
   return new Promise<void>((resolve) => {
@@ -40,6 +55,8 @@ export function HydrateStore({ children }: { children: ReactNode }) {
     };
 
     const started = performance.now();
+    const minSplashMs = isNativeApp() ? 2200 : 900;
+    hideNativeSplash();
 
     const run = async () => {
       bump(14);
@@ -80,7 +97,7 @@ export function HydrateStore({ children }: { children: ReactNode }) {
       bump(94);
 
       const elapsed = performance.now() - started;
-      await sleep(Math.max(0, MIN_SPLASH_MS - elapsed));
+      await sleep(Math.max(0, minSplashMs - elapsed));
       if (cancelled) return;
 
       bump(100);
