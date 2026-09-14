@@ -10,12 +10,28 @@ let workerPromise: Promise<ServiceWorkerRegistration | null> | null = null;
 let announcedAt = "";
 let listening = false;
 
+function isEmbeddedPreview() {
+  if (typeof window === "undefined") return true;
+  try {
+    return window.self !== window.top;
+  } catch {
+    return true;
+  }
+}
+
 function appIsOpen() {
   return typeof document !== "undefined" && document.visibilityState === "visible";
 }
 
 export function registerRestWorker() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+    return Promise.resolve(null);
+  }
+  // Grok live preview (and any iframe) must not take over with a service worker.
+  if (isEmbeddedPreview()) {
+    void navigator.serviceWorker.getRegistrations().then((regs) => {
+      for (const reg of regs) void reg.unregister();
+    });
     return Promise.resolve(null);
   }
   listenForForeground();
