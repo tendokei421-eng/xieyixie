@@ -160,10 +160,8 @@ async function dismissRestNotice() {
   }
 }
 
-/** Must run inside the tap that starts a rest so iOS allows audio + permission. */
-export async function armRestAlerts() {
-  primeRestChime();
-  startKeepAlive();
+/** First-launch allow tap, and later rest start. Must run in a user gesture. */
+export async function enableAppPermissions() {
   await armNativeNotifications();
   if (typeof Notification !== "undefined" && Notification.permission === "default") {
     try {
@@ -172,7 +170,24 @@ export async function armRestAlerts() {
       /* ignore */
     }
   }
+  primeRestChime();
+  try {
+    navigator.vibrate?.([80, 50, 80]);
+  } catch {
+    /* iOS has no vibrate */
+  }
+  try {
+    await navigator.storage?.persist?.();
+  } catch {
+    /* optional */
+  }
   await registerRestWorker();
+}
+
+/** Must run inside the tap that starts a rest so iOS allows audio + permission. */
+export async function armRestAlerts() {
+  await enableAppPermissions();
+  startKeepAlive();
 }
 
 export async function beginRest(activityId: string, durationMin: number) {

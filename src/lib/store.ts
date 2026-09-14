@@ -16,6 +16,7 @@ type AppState = {
   restLogs: RestLog[];
   activeRest: ActiveRest | null;
   editor: EditorState;
+  permissionsAsked: boolean;
   setHydrated: (v: boolean) => void;
   setSelectedDate: (date: string) => void;
   addEvent: (e: CalendarEvent) => void;
@@ -33,6 +34,7 @@ type AppState = {
   completeRest: () => void;
   cancelRest: () => void;
   restLogsOn: (date: string) => RestLog[];
+  markPermissionsAsked: () => void;
 };
 
 function defaultDraft(date: string): CalendarEvent {
@@ -59,6 +61,7 @@ export const useAppStore = create<AppState>()(
       restLogs: [],
       activeRest: null,
       editor: { open: false },
+      permissionsAsked: false,
       setHydrated: (v) => set({ hydrated: v }),
       setSelectedDate: (date) => set({ selectedDate: date }),
       addEvent: (e) => set({ events: [...get().events, e] }),
@@ -172,6 +175,7 @@ export const useAppStore = create<AppState>()(
       },
       cancelRest: () => set({ activeRest: null }),
       restLogsOn: (date) => get().restLogs.filter((l) => l.date === date),
+      markPermissionsAsked: () => set({ permissionsAsked: true }),
     }),
     {
       name: "xieyixie-v2",
@@ -182,6 +186,7 @@ export const useAppStore = create<AppState>()(
         events: s.events,
         restLogs: s.restLogs,
         activeRest: s.activeRest,
+        permissionsAsked: s.permissionsAsked,
       }),
     },
   ),
