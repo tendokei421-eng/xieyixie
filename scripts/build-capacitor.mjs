@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
  * Windows-safe Capacitor web build.
- * Sets DEPLOY_TARGET=capacitor (base "/") then copies the SPA into capacitor-www/.
+ *
+ * GitHub Pages already produces a working static SPA (with index.html).
+ * Reuse that build, then finish-capacitor rewrites /xieyixie/ → /.
  */
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -33,6 +35,7 @@ function run(command, args, extraEnv = {}) {
 }
 
 await run("node", [join("scripts", "with-app-env.mjs"), "vite", "build"], {
-  DEPLOY_TARGET: "capacitor",
+  DEPLOY_TARGET: "github-pages",
 });
+await run("node", [join("scripts", "finish-pages.mjs")]);
 await run("node", [join("scripts", "finish-capacitor.mjs")]);
