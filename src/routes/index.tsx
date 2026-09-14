@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { dateKey } from "@/lib/dates";
 import { ACTIVITIES, currentOrNextGap, findGaps, isNowInEvent } from "@/lib/recommendations";
 import { computeRelaxation } from "@/lib/relaxation";
+import { beginRest } from "@/lib/rest-notify";
 import { useAppStore } from "@/lib/store";
 import { useDayEvents, useDayRests } from "@/hooks/use-day-data";
 import { useNow } from "@/hooks/use-now";
@@ -13,7 +14,6 @@ export const Route = createFileRoute("/")({ component: Home });
 
 function Home() {
   const { hhmm } = useNow();
-  const startRest = useAppStore((s) => s.startRest);
   const activeRest = useAppStore((s) => s.activeRest);
 
   const today = dateKey();
@@ -48,7 +48,7 @@ function Home() {
         gap={gap}
         working={working}
         hasEvents={hasEvents}
-        onStart={(a) => startRest(a.id, a.durationMin)}
+        onStart={(a) => beginRest(a.id, a.durationMin)}
       />
     </div>
   );

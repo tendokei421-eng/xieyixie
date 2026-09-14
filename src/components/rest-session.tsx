@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { activityById } from "@/lib/recommendations";
-import { playRestChime, primeRestChime, stopRestChime } from "@/lib/rest-chime";
+import { playRestChime, startKeepAlive, stopRestChime } from "@/lib/rest-chime";
+import {
+  announceRestFinished,
+  cancelRestEnd,
+  scheduleRestEnd,
+} from "@/lib/rest-notify";
 import { MOOD_SRC } from "@/lib/relaxation";
 import { useAppStore } from "@/lib/store";
 import { KindIcon } from "@/components/kind-icon";
@@ -17,25 +22,31 @@ export function RestSession() {
   useEffect(() => {
     if (!active) {
       finishing.current = false;
+      cancelRestEnd();
       return;
     }
-    primeRestChime();
+    startKeepAlive();
+    void scheduleRestEnd(active);
     const id = window.setInterval(() => setNow(Date.now()), 250);
     return () => window.clearInterval(id);
   }, [active]);
 
-  const finish = () => {
+  const finish = (reason: "timer" | "manual") => {
     if (finishing.current) return;
     finishing.current = true;
-    playRestChime();
+    const current = useAppStore.getState().activeRest;
+    if (reason === "timer" && current) announceRestFinished(current);
+    else playRestChime();
     completeRest();
-    toast.success("这段休息完成了");
+    if (typeof document === "undefined" || document.visibilityState === "visible") {
+      toast.success("这段休息完成了");
+    }
   };
 
   useEffect(() => {
     if (!active) return;
     const endAt = new Date(active.startedAt).getTime() + active.durationMin * 60_000;
-    if (now >= endAt) finish();
+    if (now >= endAt) finish("timer");
     // finish reads a ref; we only want to fire when the clock crosses the end.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, now]);
@@ -49,6 +60,8 @@ export function RestSession() {
   const m = Math.floor(remainingSec / 60);
   const s = remainingSec % 60;
   const progress = 1 - remainingMs / (active.durationMin * 60_000);
+  const lockAlerts =
+    typeof Notification !== "undefined" && Notification.permission === "granted";
 
   return (
     <div className="rest-screen">
@@ -88,6 +101,11 @@ export function RestSession() {
             style={{ width: `${Math.min(100, progress * 100)}%` }}
           />
         </div>
+        <p className="mt-3 text-center text-xs leading-relaxed text-subtle">
+          {lockAlerts
+            ? "放到后台或锁屏，到点会震动、响铃，并在锁屏或横幅里通知"
+            : "放到后台也可以继续计时。允许通知后，锁屏和横幅也会提醒"}
+        </p>
 
         <div className="mt-auto flex gap-2 pt-6">
           <Button
@@ -95,12 +113,13 @@ export function RestSession() {
             className="min-h-12 flex-1"
             onClick={() => {
               stopRestChime();
+              cancelRestEnd();
               cancelRest();
             }}
           >
             先结束
           </Button>
-          <Button className="min-h-12 flex-1" onClick={finish}>
+          <Button className="min-h-12 flex-1" onClick={() => finish("manual")}>
             完成休息
           </Button>
         </div>
