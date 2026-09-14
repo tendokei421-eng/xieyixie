@@ -37,6 +37,7 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+          node scripts/patch-android-notify.mjs
 
       - name: 编译可安装的调试包
         working-directory: android
