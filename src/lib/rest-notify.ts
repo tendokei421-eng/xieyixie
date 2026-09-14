@@ -6,6 +6,7 @@ import { useAppStore } from "./store";
 /** ~5s so it covers the rest-done chime. */
 export const VIBRATE_PATTERN = [500, 140, 500, 140, 500, 140, 500, 140, 500, 140, 800];
 const NOTICE_TAG = "xieyixie-rest-done";
+const NATIVE_NOTICE_ID = 42101;
 
 let workerPromise: Promise<ServiceWorkerRegistration | null> | null = null;
 let announcedAt = "";
@@ -18,6 +19,76 @@ function isEmbeddedPreview() {
     return window.self !== window.top;
   } catch {
     return true;
+  }
+}
+
+type NativeLocalNotifications = {
+  requestPermissions: () => Promise<{ display?: string }>;
+  schedule: (opts: {
+    notifications: Array<{
+      id: number;
+      title: string;
+      body: string;
+      schedule?: { at: Date; allowWhileIdle?: boolean };
+    }>;
+  }) => Promise<unknown>;
+  cancel: (opts: { notifications: Array<{ id: number }> }) => Promise<unknown>;
+};
+
+/** Capacitor injects this on the Android WebView. Missing on the website / PWA. */
+function nativeLocalNotifications(): NativeLocalNotifications | null {
+  if (typeof window === "undefined") return null;
+  const cap = (
+    window as unknown as {
+      Capacitor?: {
+        isNativePlatform?: () => boolean;
+        Plugins?: { LocalNotifications?: NativeLocalNotifications };
+      };
+    }
+  ).Capacitor;
+  if (!cap?.isNativePlatform?.()) return null;
+  return cap.Plugins?.LocalNotifications ?? null;
+}
+
+async function armNativeNotifications() {
+  const ln = nativeLocalNotifications();
+  if (!ln) return;
+  try {
+    await ln.requestPermissions();
+  } catch {
+    /* denied or plugin not installed */
+  }
+}
+
+async function scheduleNativeRestEnd(payload: { endAt: number; title: string; body: string }) {
+  const ln = nativeLocalNotifications();
+  if (!ln) return;
+  const when = new Date(payload.endAt);
+  if (when.getTime() <= Date.now() + 500) return;
+  try {
+    await ln.cancel({ notifications: [{ id: NATIVE_NOTICE_ID }] });
+    await ln.schedule({
+      notifications: [
+        {
+          id: NATIVE_NOTICE_ID,
+          title: payload.title,
+          body: payload.body,
+          schedule: { at: when, allowWhileIdle: true },
+        },
+      ],
+    });
+  } catch {
+    /* exact alarm off, etc. */
+  }
+}
+
+async function cancelNativeRestEnd() {
+  const ln = nativeLocalNotifications();
+  if (!ln) return;
+  try {
+    await ln.cancel({ notifications: [{ id: NATIVE_NOTICE_ID }] });
+  } catch {
+    /* ignore */
   }
 }
 
@@ -80,6 +151,7 @@ function listenForForeground() {
 
 async function dismissRestNotice() {
   try {
+    await cancelNativeRestEnd();
     const reg = await registerRestWorker();
     const notes = await reg?.getNotifications?.({ tag: NOTICE_TAG });
     notes?.forEach((n) => n.close());
@@ -92,6 +164,7 @@ async function dismissRestNotice() {
 export async function armRestAlerts() {
   primeRestChime();
   startKeepAlive();
+  await armNativeNotifications();
   if (typeof Notification !== "undefined" && Notification.permission === "default") {
     try {
       await Notification.requestPermission();
@@ -148,8 +221,12 @@ export async function scheduleRestEnd(active: {
     useAppStore.getState().completeRest();
   }, Math.max(0, payload.endAt - Date.now()));
 
+  await scheduleNativeRestEnd(payload);
+
   const reg = await registerRestWorker();
   postToWorker(reg, { type: "schedule-rest-end", ...payload });
+
+  if (nativeLocalNotifications()) return;
 
   // Chromium: OS can show the notice at endAt even if the worker was killed.
   try {
@@ -181,6 +258,7 @@ export function cancelRestEnd() {
     window.clearTimeout(pageTimer);
     pageTimer = 0;
   }
+  void cancelNativeRestEnd();
   const worker = navigator.serviceWorker?.controller;
   worker?.postMessage({ type: "cancel-rest-end" });
   void registerRestWorker().then((reg) => {
@@ -209,6 +287,8 @@ export function announceRestFinished(active: {
 
 async function showBackgroundNotice(payload: { title: string; body: string }) {
   if (appIsOpen()) return;
+  // Native Android already scheduled a system notification for endAt.
+  if (nativeLocalNotifications()) return;
   if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
 
   const options = {
