@@ -48,7 +48,7 @@ function Home() {
         gap={gap}
         working={working}
         hasEvents={hasEvents}
-        onStart={(a) => beginRest(a.id, a.durationMin)}
+        onStart={(a) => void beginRest(a.id, a.durationMin)}
       />
     </div>
   );

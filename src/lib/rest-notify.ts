@@ -4,9 +4,11 @@ import { playRestChime, primeRestChime, startKeepAlive, stopKeepAlive } from "./
 import { useAppStore } from "./store";
 
 const VIBRATE_PATTERN = [400, 120, 400, 120, 400, 120, 500, 180, 700];
+const NOTICE_TAG = "xieyixie-rest-done";
 
 let workerPromise: Promise<ServiceWorkerRegistration | null> | null = null;
 let announcedAt = "";
+let listening = false;
 
 function appIsOpen() {
   return typeof document !== "undefined" && document.visibilityState === "visible";
@@ -16,6 +18,7 @@ export function registerRestWorker() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
     return Promise.resolve(null);
   }
+  listenForForeground();
   if (!workerPromise) {
     workerPromise = navigator.serviceWorker
       .register(publicUrl("/sw.js"), { scope: publicUrl("/") })
@@ -29,22 +32,40 @@ export function registerRestWorker() {
   return workerPromise;
 }
 
+function listenForForeground() {
+  if (listening || typeof document === "undefined") return;
+  listening = true;
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") void dismissRestNotice();
+  });
+}
+
+async function dismissRestNotice() {
+  try {
+    const reg = await registerRestWorker();
+    const notes = await reg?.getNotifications?.({ tag: NOTICE_TAG });
+    notes?.forEach((n) => n.close());
+  } catch {
+    /* ignore */
+  }
+}
+
 /** Must run inside the tap that starts a rest so iOS allows audio + permission. */
-export function armRestAlerts() {
+export async function armRestAlerts() {
   primeRestChime();
   startKeepAlive();
   if (typeof Notification !== "undefined" && Notification.permission === "default") {
     try {
-      void Notification.requestPermission();
+      await Notification.requestPermission();
     } catch {
       /* ignore */
     }
   }
-  void registerRestWorker();
+  await registerRestWorker();
 }
 
-export function beginRest(activityId: string, durationMin: number) {
-  armRestAlerts();
+export async function beginRest(activityId: string, durationMin: number) {
+  await armRestAlerts();
   useAppStore.getState().startRest(activityId, durationMin);
 }
 
@@ -118,17 +139,18 @@ async function showBackgroundNotice(payload: { title: string; body: string }) {
         icon: publicUrl("/icon-192.png"),
         badge: publicUrl("/icon-192.png"),
         lang: "zh-CN",
-        tag: "xieyixie-rest-done",
+        tag: NOTICE_TAG,
         renotify: true,
         requireInteraction: true,
         silent: true,
         vibrate: VIBRATE_PATTERN,
+        data: { url: publicUrl("/") },
       } as NotificationOptions);
     } else {
       const n = new Notification(payload.title, {
         body: payload.body,
         icon: publicUrl("/icon-192.png"),
-        tag: "xieyixie-rest-done",
+        tag: NOTICE_TAG,
         silent: true,
       });
       n.onclick = () => {

@@ -1,4 +1,4 @@
-/* 歇一歇 rest-timer worker v2. No fetch handler — do not intercept app assets. */
+/* 歇一歇 rest-timer worker v3. No fetch handler — do not intercept app assets. */
 const TAG = "xieyixie-rest-done";
 let restTimer = 0;
 let pending = null;
@@ -56,31 +56,38 @@ async function fireRestEnd(payload) {
   });
   const appOpen = windows.some((client) => client.visibilityState === "visible");
 
-  if (windows.length === 0) {
-    // Page is gone — system notification (lock screen if locked, banner if not).
-    try {
-      await self.registration.showNotification(payload.title || "歇一歇", {
-        body: payload.body || "这段休息结束了",
-        icon: iconUrl("icon-192.png"),
-        badge: iconUrl("icon-192.png"),
-        lang: "zh-CN",
-        tag: TAG,
-        renotify: true,
-        requireInteraction: true,
-        silent: false,
-        vibrate: [400, 120, 400, 120, 400, 120, 500, 180, 700],
-        data: { url: self.registration.scope },
-      });
-    } catch {
-      /* permission may have been revoked */
-    }
-  } else if (!appOpen) {
-    // Backgrounded but page still running: let it play the 5s chime + notify.
-    for (const client of windows) {
-      client.postMessage({ type: "rest-timer-fired" });
-    }
+  // Page still around: it plays the 5s chime + vibrates.
+  for (const client of windows) {
+    client.postMessage({ type: "rest-timer-fired" });
   }
-  // App in the foreground: the rest screen finishes itself. No notification.
+
+  // App in the foreground: rest screen finishes itself. No notification.
+  if (appOpen) {
+    pending = null;
+    return;
+  }
+
+  // Screen off / lock screen → lock-screen notification.
+  // Unlocked home or another app → banner / heads-up.
+  // The OS picks that from the device lock state; the Web API cannot.
+  const pageAlive = windows.length > 0;
+  try {
+    await self.registration.showNotification(payload.title || "歇一歇", {
+      body: payload.body || "这段休息结束了",
+      icon: iconUrl("icon-192.png"),
+      badge: iconUrl("icon-192.png"),
+      lang: "zh-CN",
+      tag: TAG,
+      renotify: true,
+      requireInteraction: true,
+      // Page will play rest-done.mp3. If the page is gone, let the OS sound.
+      silent: pageAlive,
+      vibrate: [400, 120, 400, 120, 400, 120, 500, 180, 700],
+      data: { url: self.registration.scope },
+    });
+  } catch {
+    /* permission may have been revoked */
+  }
   pending = null;
 }
 
