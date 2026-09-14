@@ -15,6 +15,11 @@ const config: CapacitorConfig = {
     androidScheme: "https",
     // url: "https://tendokei421-eng.github.io/xieyixie/",
   },
+  plugins: {
+    LocalNotifications: {
+      iconColor: "#4b9ed1",
+    },
+  },
 };
 
 export default config;
