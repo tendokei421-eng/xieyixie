@@ -1,5 +1,6 @@
-/* 歇一歇 rest-timer worker v3. No fetch handler — do not intercept app assets. */
+/* 歇一歇 rest-timer worker v4. No fetch handler — do not intercept app assets. */
 const TAG = "xieyixie-rest-done";
+const VIBRATE = [500, 140, 500, 140, 500, 140, 500, 140, 500, 140, 800];
 let restTimer = 0;
 let pending = null;
 
@@ -56,21 +57,18 @@ async function fireRestEnd(payload) {
   });
   const appOpen = windows.some((client) => client.visibilityState === "visible");
 
-  // Page still around: it plays the 5s chime + vibrates.
   for (const client of windows) {
     client.postMessage({ type: "rest-timer-fired" });
   }
 
-  // App in the foreground: rest screen finishes itself. No notification.
   if (appOpen) {
     pending = null;
     return;
   }
 
-  // Screen off / lock screen → lock-screen notification.
-  // Unlocked home or another app → banner / heads-up.
-  // The OS picks that from the device lock state; the Web API cannot.
-  const pageAlive = windows.length > 0;
+  // Locked / screen off → lock-screen notice.
+  // Screen on, app in background → banner / heads-up.
+  // The OS chooses from the lock state; the Web API cannot force one or the other.
   try {
     await self.registration.showNotification(payload.title || "歇一歇", {
       body: payload.body || "这段休息结束了",
@@ -80,9 +78,8 @@ async function fireRestEnd(payload) {
       tag: TAG,
       renotify: true,
       requireInteraction: true,
-      // Page will play rest-done.mp3. If the page is gone, let the OS sound.
-      silent: pageAlive,
-      vibrate: [400, 120, 400, 120, 400, 120, 500, 180, 700],
+      silent: false,
+      vibrate: VIBRATE,
       data: { url: self.registration.scope },
     });
   } catch {

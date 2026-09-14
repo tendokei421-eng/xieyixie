@@ -27,15 +27,25 @@ export function RestSession() {
     }
     startKeepAlive();
     void scheduleRestEnd(active);
-    const id = window.setInterval(() => setNow(Date.now()), 250);
-    return () => window.clearInterval(id);
+    const endAt = new Date(active.startedAt).getTime() + active.durationMin * 60_000;
+    const tick = window.setInterval(() => setNow(Date.now()), 250);
+    const remain = Math.max(0, endAt - Date.now());
+    const due = window.setTimeout(() => setNow(endAt), remain);
+    return () => {
+      window.clearInterval(tick);
+      window.clearTimeout(due);
+    };
   }, [active]);
 
   const finish = (reason: "timer" | "manual") => {
     if (finishing.current) return;
-    finishing.current = true;
     const current = useAppStore.getState().activeRest;
-    if (reason === "timer" && current) announceRestFinished(current);
+    if (!current) {
+      finishing.current = true;
+      return;
+    }
+    finishing.current = true;
+    if (reason === "timer") announceRestFinished(current);
     else playRestChime();
     completeRest();
     if (typeof document === "undefined" || document.visibilityState === "visible") {
@@ -103,7 +113,7 @@ export function RestSession() {
         </div>
         <p className="mt-3 text-center text-xs leading-relaxed text-subtle">
           {lockAlerts
-            ? "放到后台或锁屏，到点会震动、响铃，并在锁屏或横幅里通知"
+            ? "放到后台或锁屏，到点会震动、响五秒铃，熄屏在锁屏通知，亮屏则出横幅"
             : "放到后台也可以继续计时。允许通知后，锁屏和横幅也会提醒"}
         </p>
 

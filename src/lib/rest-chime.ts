@@ -2,6 +2,7 @@ import { publicUrl } from "./asset";
 
 let chime: HTMLAudioElement | null = null;
 let keepAlive: HTMLAudioElement | null = null;
+let keepAliveWanted = false;
 
 function getChime() {
   if (typeof window === "undefined") return null;
@@ -19,8 +20,12 @@ function getKeepAlive() {
     keepAlive = new Audio(publicUrl("/sounds/keep-alive.wav"));
     keepAlive.loop = true;
     keepAlive.preload = "auto";
-    keepAlive.volume = 0.02;
+    keepAlive.volume = 0.04;
     keepAlive.setAttribute("playsinline", "");
+    keepAlive.addEventListener("pause", () => {
+      if (!keepAliveWanted || !keepAlive) return;
+      void keepAlive.play().catch(() => undefined);
+    });
   }
   return keepAlive;
 }
@@ -62,11 +67,12 @@ export function primeRestChime() {
 
 /** Quiet loop so mobile browsers keep the rest timer alive in the background. */
 export function startKeepAlive() {
+  keepAliveWanted = true;
   const audio = getKeepAlive();
   if (!audio) return;
   try {
     audio.currentTime = 0;
-    audio.volume = 0.02;
+    audio.volume = 0.04;
     void audio.play().then(markPlaying).catch(() => undefined);
   } catch {
     /* autoplay policies can still block */
@@ -74,6 +80,7 @@ export function startKeepAlive() {
 }
 
 export function stopKeepAlive() {
+  keepAliveWanted = false;
   if (!keepAlive) return;
   keepAlive.pause();
   keepAlive.currentTime = 0;
