@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   apk:
@@ -43,9 +43,28 @@ jobs:
         working-directory: android
         run: chmod +x gradlew && ./gradlew assembleDebug --no-daemon
 
+      - name: 准备发布用 APK
+        run: |
+          mkdir -p dist-apk
+          cp android/app/build/outputs/apk/debug/*.apk dist-apk/xieyixie.apk
+
       - name: 上传 APK
         uses: actions/upload-artifact@v4
         with:
           name: xieyixie-debug
-          path: android/app/build/outputs/apk/debug/*.apk
+          path: dist-apk/xieyixie.apk
           if-no-files-found: error
+
+      - name: 发布到可分享的下载页
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: apk
+          name: 歇一歇 安卓安装包
+          make_latest: true
+          files: dist-apk/xieyixie.apk
+          body: |
+            点下面链接下载安装包（调试版）：
+
+            https://github.com/tendokei421-eng/xieyixie/releases/latest/download/xieyixie.apk
+
+            手机需允许「未知来源」。微信里请用系统浏览器打开。
