@@ -1,17 +1,22 @@
 import type { ReactNode } from "react";
+import { useEffect } from "react";
 import { Link, useRouterState } from "@tanstack/react-router";
 import { CalendarDays, Leaf } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { registerRestWorker } from "@/lib/rest-notify";
 import { useAppStore } from "@/lib/store";
 import { useLockBody, useVisualViewport } from "@/hooks/use-mobile";
 import { EventEditor } from "@/components/event-editor";
-import { ReminderPopup } from "@/components/reminder-popup";
 import { RestSession } from "@/components/rest-session";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const overlayOpen = useAppStore((s) => s.editor.open || !!s.activeRest);
   const { keyboardOpen } = useVisualViewport();
   useLockBody(overlayOpen);
+
+  useEffect(() => {
+    void registerRestWorker();
+  }, []);
 
   return (
     <div className="app-frame">
@@ -28,7 +33,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
       </div>
       <EventEditor />
-      <ReminderPopup />
       <RestSession />
     </div>
   );
