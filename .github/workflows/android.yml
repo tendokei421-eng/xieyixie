@@ -17,10 +17,10 @@ jobs:
           node-version: "22"
           cache: npm
 
-      - run: npm ci
+      - run: npm install
 
-      - name: 安装 Capacitor
-        run: npm install --no-save @capacitor/core@^7.4.3 @capacitor/cli@^7.4.3 @capacitor/android@^7.4.3 @capacitor/local-notifications@^7.0.3
+      - name: 安装 Capacitor 安卓端
+        run: npm install --no-save @capacitor/cli@^7.4.3 @capacitor/android@^7.4.3
 
       - name: 构建写入安装包的网页
         run: npm run build:capacitor
