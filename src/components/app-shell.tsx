@@ -7,7 +7,6 @@ import { registerRestWorker } from "@/lib/rest-notify";
 import { useAppStore } from "@/lib/store";
 import { useLockBody, useVisualViewport } from "@/hooks/use-mobile";
 import { EventEditor } from "@/components/event-editor";
-import { PermissionGate } from "@/components/permission-gate";
 import { RestSession } from "@/components/rest-session";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -34,7 +33,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         </nav>
       </div>
       <EventEditor />
-      <PermissionGate />
       <RestSession />
     </div>
   );
