@@ -31,7 +31,9 @@ jobs:
           java-version: "21"
 
       - name: 安装 Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
+        with:
+          packages: platform-tools
 
       - name: 生成安卓工程并同步网页
         run: |
