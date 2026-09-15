@@ -3,10 +3,10 @@ import { activityById } from "./recommendations";
 import { playRestChime, primeRestChime, startKeepAlive, stopKeepAlive } from "./rest-chime";
 import { useAppStore } from "./store";
 
-/** ~5s so it covers the rest-done chime. */
 export const VIBRATE_PATTERN = [500, 140, 500, 140, 500, 140, 500, 140, 500, 140, 800];
 const NOTICE_TAG = "xieyixie-rest-done";
 const NATIVE_NOTICE_ID = 42101;
+const REST_CHANNEL = "rest-end";
 
 let workerPromise: Promise<ServiceWorkerRegistration | null> | null = null;
 let announcedAt = "";
@@ -24,18 +24,31 @@ function isEmbeddedPreview() {
 
 type NativeLocalNotifications = {
   requestPermissions: () => Promise<{ display?: string }>;
+  checkPermissions?: () => Promise<{ display?: string }>;
+  checkExactNotificationSetting?: () => Promise<{ exact_alarm?: string }>;
+  changeExactNotificationSetting?: () => Promise<{ exact_alarm?: string }>;
+  createChannel?: (channel: {
+    id: string;
+    name: string;
+    description?: string;
+    importance?: number;
+    visibility?: number;
+    vibration?: boolean;
+    sound?: string;
+  }) => Promise<void>;
   schedule: (opts: {
     notifications: Array<{
       id: number;
       title: string;
       body: string;
-      schedule?: { at: Date; allowWhileIdle?: boolean };
+      channelId?: string;
+      sound?: string;
+      schedule?: { at: string | Date; allowWhileIdle?: boolean };
     }>;
   }) => Promise<unknown>;
   cancel: (opts: { notifications: Array<{ id: number }> }) => Promise<unknown>;
 };
 
-/** Capacitor injects this on the Android WebView. Missing on the website / PWA. */
 function nativeLocalNotifications(): NativeLocalNotifications | null {
   if (typeof window === "undefined") return null;
   const cap = (
@@ -56,7 +69,20 @@ async function armNativeNotifications() {
   try {
     await ln.requestPermissions();
   } catch {
-    /* denied or plugin not installed */
+    /* denied or plugin missing */
+  }
+  try {
+    await ln.createChannel?.({
+      id: REST_CHANNEL,
+      name: "休息结束",
+      description: "休息计时结束提醒",
+      importance: 5,
+      visibility: 1,
+      vibration: true,
+      sound: "rest_done",
+    });
+  } catch {
+    /* channel may already exist */
   }
 }
 
@@ -73,12 +99,29 @@ async function scheduleNativeRestEnd(payload: { endAt: number; title: string; bo
           id: NATIVE_NOTICE_ID,
           title: payload.title,
           body: payload.body,
-          schedule: { at: when, allowWhileIdle: true },
+          channelId: REST_CHANNEL,
+          sound: "rest_done",
+          schedule: { at: when.toISOString(), allowWhileIdle: true },
         },
       ],
     });
   } catch {
-    /* exact alarm off, etc. */
+    try {
+      await ln.schedule({
+        notifications: [
+          {
+            id: NATIVE_NOTICE_ID,
+            title: payload.title,
+            body: payload.body,
+            channelId: REST_CHANNEL,
+            sound: "rest_done",
+            schedule: { at: when, allowWhileIdle: true },
+          },
+        ],
+      });
+    } catch {
+      /* exact alarm still blocked */
+    }
   }
 }
 
@@ -100,7 +143,6 @@ export function registerRestWorker() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
     return Promise.resolve(null);
   }
-  // Grok live preview (and any iframe) must not take over with a service worker.
   if (isEmbeddedPreview()) {
     void navigator.serviceWorker.getRegistrations().then((regs) => {
       for (const reg of regs) void reg.unregister();
@@ -160,7 +202,6 @@ async function dismissRestNotice() {
   }
 }
 
-/** First-launch allow tap, and later rest start. Must run in a user gesture. */
 export async function enableAppPermissions() {
   await armNativeNotifications();
   if (typeof Notification !== "undefined" && Notification.permission === "default") {
@@ -184,7 +225,6 @@ export async function enableAppPermissions() {
   await registerRestWorker();
 }
 
-/** Must run inside the tap that starts a rest so iOS allows audio + permission. */
 export async function armRestAlerts() {
   await enableAppPermissions();
   startKeepAlive();
@@ -243,7 +283,6 @@ export async function scheduleRestEnd(active: {
 
   if (nativeLocalNotifications()) return;
 
-  // Chromium: OS can show the notice at endAt even if the worker was killed.
   try {
     const Trigger = (window as unknown as { TimestampTrigger?: new (t: number) => unknown })
       .TimestampTrigger;
@@ -263,7 +302,7 @@ export async function scheduleRestEnd(active: {
       } as NotificationOptions);
     }
   } catch {
-    /* Notification Triggers are not available on most phones */
+    /* Notification Triggers unavailable */
   }
 }
 
@@ -302,7 +341,6 @@ export function announceRestFinished(active: {
 
 async function showBackgroundNotice(payload: { title: string; body: string }) {
   if (appIsOpen()) return;
-  // Native Android already scheduled a system notification for endAt.
   if (nativeLocalNotifications()) return;
   if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
 
@@ -338,7 +376,7 @@ async function showBackgroundNotice(payload: { title: string; body: string }) {
         n.close();
       };
     } catch {
-      /* Safari without permission */
+      /* ignore */
     }
   }
 }
