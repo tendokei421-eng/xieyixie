@@ -6,6 +6,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  rmSync,
   unlinkSync,
   writeFileSync,
 } from "node:fs";
@@ -64,6 +65,10 @@ if (iconSrc) {
   for (const dirName of existsSync(resDir) ? readdirSync(resDir) : []) {
     if (!dirName.startsWith("mipmap")) continue;
     const dir = join(resDir, dirName);
+    if (dirName === "mipmap-anydpi") {
+      rmSync(dir, { recursive: true, force: true });
+      continue;
+    }
     if (dirName.includes("anydpi")) {
       for (const name of names) {
         const extra = join(dir, name);
@@ -78,20 +83,18 @@ if (iconSrc) {
   }
   const adaptive = `<?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@color/colorPrimary"/>
+    <background android:drawable="@android:color/white"/>
     <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
 </adaptive-icon>
 `;
-  for (const folder of ["mipmap-anydpi-v26", "mipmap-anydpi"]) {
-    const dir = join(resDir, folder);
-    mkdirSync(dir, { recursive: true });
-    for (const name of names) {
-      const extra = join(dir, name);
-      if (existsSync(extra)) unlinkSync(extra);
-    }
-    writeFileSync(join(dir, "ic_launcher.xml"), adaptive);
-    writeFileSync(join(dir, "ic_launcher_round.xml"), adaptive);
+  const v26 = join(resDir, "mipmap-anydpi-v26");
+  mkdirSync(v26, { recursive: true });
+  for (const name of names) {
+    const extra = join(v26, name);
+    if (existsSync(extra)) unlinkSync(extra);
   }
+  writeFileSync(join(v26, "ic_launcher.xml"), adaptive);
+  writeFileSync(join(v26, "ic_launcher_round.xml"), adaptive);
   console.log(`patch-android-notify: launcher icon from ${iconSrc} (${iconCopies} files)`);
 }
 
