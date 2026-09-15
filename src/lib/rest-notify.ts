@@ -1,3 +1,5 @@
+import { Capacitor, registerPlugin } from "@capacitor/core";
+import { LocalNotifications } from "@capacitor/local-notifications";
 import { publicUrl } from "./asset";
 import { activityById } from "./recommendations";
 import { playRestChime, primeRestChime, startKeepAlive, stopKeepAlive } from "./rest-chime";
@@ -6,7 +8,12 @@ import { useAppStore } from "./store";
 export const VIBRATE_PATTERN = [500, 140, 500, 140, 500, 140, 500, 140, 500, 140, 800];
 const NOTICE_TAG = "xieyixie-rest-done";
 const NATIVE_NOTICE_ID = 42101;
-const REST_CHANNEL = "rest-end";
+const REST_CHANNEL = "rest-end-v3";
+
+const RestAlarm = registerPlugin<{
+  schedule: (opts: { at: number; title: string; body: string }) => Promise<void>;
+  cancel: () => Promise<void>;
+}>("RestAlarm");
 
 let workerPromise: Promise<ServiceWorkerRegistration | null> | null = null;
 let announcedAt = "";
@@ -22,57 +29,23 @@ function isEmbeddedPreview() {
   }
 }
 
-type NativeLocalNotifications = {
-  requestPermissions: () => Promise<{ display?: string }>;
-  checkPermissions?: () => Promise<{ display?: string }>;
-  checkExactNotificationSetting?: () => Promise<{ exact_alarm?: string }>;
-  changeExactNotificationSetting?: () => Promise<{ exact_alarm?: string }>;
-  createChannel?: (channel: {
-    id: string;
-    name: string;
-    description?: string;
-    importance?: number;
-    visibility?: number;
-    vibration?: boolean;
-    sound?: string;
-  }) => Promise<void>;
-  schedule: (opts: {
-    notifications: Array<{
-      id: number;
-      title: string;
-      body: string;
-      channelId?: string;
-      sound?: string;
-      schedule?: { at: string | Date; allowWhileIdle?: boolean };
-    }>;
-  }) => Promise<unknown>;
-  cancel: (opts: { notifications: Array<{ id: number }> }) => Promise<unknown>;
-};
-
-function nativeLocalNotifications(): NativeLocalNotifications | null {
-  if (typeof window === "undefined") return null;
-  const cap = (
-    window as unknown as {
-      Capacitor?: {
-        isNativePlatform?: () => boolean;
-        Plugins?: { LocalNotifications?: NativeLocalNotifications };
-      };
-    }
-  ).Capacitor;
-  if (!cap?.isNativePlatform?.()) return null;
-  return cap.Plugins?.LocalNotifications ?? null;
+function isNativeApp() {
+  try {
+    return Capacitor.isNativePlatform();
+  } catch {
+    return false;
+  }
 }
 
 async function armNativeNotifications() {
-  const ln = nativeLocalNotifications();
-  if (!ln) return;
+  if (!isNativeApp()) return;
   try {
-    await ln.requestPermissions();
+    await LocalNotifications.requestPermissions();
   } catch {
-    /* denied or plugin missing */
+    /* denied */
   }
   try {
-    await ln.createChannel?.({
+    await LocalNotifications.createChannel({
       id: REST_CHANNEL,
       name: "休息结束",
       description: "休息计时结束提醒",
@@ -84,16 +57,32 @@ async function armNativeNotifications() {
   } catch {
     /* channel may already exist */
   }
+  try {
+    const exact = await LocalNotifications.checkExactNotificationSetting();
+    if (exact.exact_alarm !== "granted") {
+      await LocalNotifications.changeExactNotificationSetting();
+    }
+  } catch {
+    /* older plugin */
+  }
 }
 
 async function scheduleNativeRestEnd(payload: { endAt: number; title: string; body: string }) {
-  const ln = nativeLocalNotifications();
-  if (!ln) return;
+  if (!isNativeApp()) return;
   const when = new Date(payload.endAt);
-  if (when.getTime() <= Date.now() + 500) return;
+  if (when.getTime() <= Date.now() + 400) return;
   try {
-    await ln.cancel({ notifications: [{ id: NATIVE_NOTICE_ID }] });
-    await ln.schedule({
+    await RestAlarm.schedule({
+      at: payload.endAt,
+      title: payload.title,
+      body: payload.body,
+    });
+  } catch {
+    /* native plugin missing in this build */
+  }
+  try {
+    await LocalNotifications.cancel({ notifications: [{ id: NATIVE_NOTICE_ID }] });
+    await LocalNotifications.schedule({
       notifications: [
         {
           id: NATIVE_NOTICE_ID,
@@ -101,35 +90,24 @@ async function scheduleNativeRestEnd(payload: { endAt: number; title: string; bo
           body: payload.body,
           channelId: REST_CHANNEL,
           sound: "rest_done",
-          schedule: { at: when.toISOString(), allowWhileIdle: true },
+          schedule: { at: when, allowWhileIdle: true },
         },
       ],
     });
   } catch {
-    try {
-      await ln.schedule({
-        notifications: [
-          {
-            id: NATIVE_NOTICE_ID,
-            title: payload.title,
-            body: payload.body,
-            channelId: REST_CHANNEL,
-            sound: "rest_done",
-            schedule: { at: when, allowWhileIdle: true },
-          },
-        ],
-      });
-    } catch {
-      /* exact alarm still blocked */
-    }
+    /* exact alarm still blocked; RestAlarm is the fallback */
   }
 }
 
 async function cancelNativeRestEnd() {
-  const ln = nativeLocalNotifications();
-  if (!ln) return;
+  if (!isNativeApp()) return;
   try {
-    await ln.cancel({ notifications: [{ id: NATIVE_NOTICE_ID }] });
+    await RestAlarm.cancel();
+  } catch {
+    /* ignore */
+  }
+  try {
+    await LocalNotifications.cancel({ notifications: [{ id: NATIVE_NOTICE_ID }] });
   } catch {
     /* ignore */
   }
@@ -143,10 +121,12 @@ export function registerRestWorker() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
     return Promise.resolve(null);
   }
-  if (isEmbeddedPreview()) {
-    void navigator.serviceWorker.getRegistrations().then((regs) => {
-      for (const reg of regs) void reg.unregister();
-    });
+  if (isEmbeddedPreview() || isNativeApp()) {
+    if (isEmbeddedPreview()) {
+      void navigator.serviceWorker.getRegistrations().then((regs) => {
+        for (const reg of regs) void reg.unregister();
+      });
+    }
     return Promise.resolve(null);
   }
   listenForForeground();
@@ -278,10 +258,10 @@ export async function scheduleRestEnd(active: {
 
   await scheduleNativeRestEnd(payload);
 
+  if (isNativeApp()) return;
+
   const reg = await registerRestWorker();
   postToWorker(reg, { type: "schedule-rest-end", ...payload });
-
-  if (nativeLocalNotifications()) return;
 
   try {
     const Trigger = (window as unknown as { TimestampTrigger?: new (t: number) => unknown })
@@ -313,6 +293,7 @@ export function cancelRestEnd() {
     pageTimer = 0;
   }
   void cancelNativeRestEnd();
+  if (isNativeApp()) return;
   const worker = navigator.serviceWorker?.controller;
   worker?.postMessage({ type: "cancel-rest-end" });
   void registerRestWorker().then((reg) => {
@@ -340,8 +321,7 @@ export function announceRestFinished(active: {
 }
 
 async function showBackgroundNotice(payload: { title: string; body: string }) {
-  if (appIsOpen()) return;
-  if (nativeLocalNotifications()) return;
+  if (appIsOpen() || isNativeApp()) return;
   if (typeof Notification === "undefined" || Notification.permission !== "granted") return;
 
   const options = {
