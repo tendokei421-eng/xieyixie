@@ -6,6 +6,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  unlinkSync,
   writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
@@ -63,6 +64,13 @@ if (iconSrc) {
   for (const dirName of existsSync(resDir) ? readdirSync(resDir) : []) {
     if (!dirName.startsWith("mipmap")) continue;
     const dir = join(resDir, dirName);
+    if (dirName.includes("anydpi")) {
+      for (const name of names) {
+        const extra = join(dir, name);
+        if (existsSync(extra)) unlinkSync(extra);
+      }
+      continue;
+    }
     for (const name of names) {
       copyFileSync(iconSrc, join(dir, name));
       iconCopies += 1;
@@ -77,6 +85,10 @@ if (iconSrc) {
   for (const folder of ["mipmap-anydpi-v26", "mipmap-anydpi"]) {
     const dir = join(resDir, folder);
     mkdirSync(dir, { recursive: true });
+    for (const name of names) {
+      const extra = join(dir, name);
+      if (existsSync(extra)) unlinkSync(extra);
+    }
     writeFileSync(join(dir, "ic_launcher.xml"), adaptive);
     writeFileSync(join(dir, "ic_launcher_round.xml"), adaptive);
   }
@@ -168,7 +180,6 @@ public class MainActivity extends BridgeActivity {
 
 if (main.endsWith(".kt")) {
   try {
-    const { unlinkSync } = await import("node:fs");
     unlinkSync(main);
   } catch {
     /* keep both if delete fails */
