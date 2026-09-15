@@ -1,6 +1,13 @@
 #!/usr/bin/env node
-/** Permissions, exact alarms, rest-done sound, and native permission prompt. */
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+/** Permissions, exact alarms, rest-done sound, launcher icon, native prompt. */
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 
 const root = process.cwd();
@@ -41,6 +48,39 @@ const chimeSrc = join(root, "public", "sounds", "rest-done.mp3");
 if (existsSync(chimeSrc)) {
   copyFileSync(chimeSrc, join(rawDir, "rest_done.mp3"));
   console.log("patch-android-notify: copied rest_done.mp3");
+}
+
+const iconSrc = [
+  join(root, "branding", "launcher.png"),
+  join(root, "public", "icon-512.png"),
+  join(root, "public", "buddy", "happy.png"),
+].find((p) => existsSync(p));
+
+if (iconSrc) {
+  const resDir = join(root, "android", "app", "src", "main", "res");
+  const names = ["ic_launcher.png", "ic_launcher_round.png", "ic_launcher_foreground.png"];
+  let iconCopies = 0;
+  for (const dirName of existsSync(resDir) ? readdirSync(resDir) : []) {
+    if (!dirName.startsWith("mipmap")) continue;
+    const dir = join(resDir, dirName);
+    for (const name of names) {
+      copyFileSync(iconSrc, join(dir, name));
+      iconCopies += 1;
+    }
+  }
+  const adaptive = `<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@color/colorPrimary"/>
+    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+</adaptive-icon>
+`;
+  for (const folder of ["mipmap-anydpi-v26", "mipmap-anydpi"]) {
+    const dir = join(resDir, folder);
+    mkdirSync(dir, { recursive: true });
+    writeFileSync(join(dir, "ic_launcher.xml"), adaptive);
+    writeFileSync(join(dir, "ic_launcher_round.xml"), adaptive);
+  }
+  console.log(`patch-android-notify: launcher icon from ${iconSrc} (${iconCopies} files)`);
 }
 
 function findMainActivity(dir) {
