@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-/** Insert notification permissions and request them from MainActivity. */
-import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
+/** Permissions, exact alarms, rest-done sound, and native permission prompt. */
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
 const root = process.cwd();
@@ -14,7 +14,9 @@ let xml = readFileSync(manifest, "utf8");
 const perms = [
   "android.permission.POST_NOTIFICATIONS",
   "android.permission.SCHEDULE_EXACT_ALARM",
+  "android.permission.USE_EXACT_ALARM",
   "android.permission.VIBRATE",
+  "android.permission.WAKE_LOCK",
 ];
 
 let added = 0;
@@ -32,6 +34,14 @@ for (const perm of perms) {
 }
 writeFileSync(manifest, xml);
 console.log(`patch-android-notify: added ${added} permission(s)`);
+
+const rawDir = join(root, "android", "app", "src", "main", "res", "raw");
+mkdirSync(rawDir, { recursive: true });
+const chimeSrc = join(root, "public", "sounds", "rest-done.mp3");
+if (existsSync(chimeSrc)) {
+  copyFileSync(chimeSrc, join(rawDir, "rest_done.mp3"));
+  console.log("patch-android-notify: copied rest_done.mp3");
+}
 
 function findMainActivity(dir) {
   if (!existsSync(dir)) return null;
@@ -54,15 +64,21 @@ if (!main) {
   process.exit(0);
 }
 
-const pkgMatch = readFileSync(main, "utf8").match(/package\s+([\w.]+)\s*;/);
+const src = readFileSync(main, "utf8");
+const pkgMatch = src.match(/package\s+([\w.]+)\s*;/) ?? src.match(/package\s+([\w.]+)/);
 const pkg = pkgMatch?.[1] ?? "com.tendokei.xieyixie";
+const javaPath = main.replace(/MainActivity\.kt$/, "MainActivity.java");
 
 writeFileSync(
-  main.replace(/MainActivity\.kt$/, "MainActivity.java"),
+  javaPath,
   `package ${pkg};
 
 import android.Manifest;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.content.pm.PackageManager;
+import android.media.AudioAttributes;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import androidx.core.app.ActivityCompat;
@@ -73,7 +89,28 @@ public class MainActivity extends BridgeActivity {
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    createRestChannel();
     requestPostNotifications();
+  }
+
+  private void createRestChannel() {
+    if (Build.VERSION.SDK_INT < 26) return;
+    NotificationManager manager = getSystemService(NotificationManager.class);
+    if (manager == null) return;
+    NotificationChannel channel =
+        new NotificationChannel("rest-end", "休息结束", NotificationManager.IMPORTANCE_HIGH);
+    channel.setDescription("休息计时结束提醒");
+    channel.enableVibration(true);
+    channel.setVibrationPattern(new long[] {500, 140, 500, 140, 500, 140, 500, 140, 500, 140, 800});
+    channel.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
+    Uri sound = Uri.parse("android.resource://" + getPackageName() + "/raw/rest_done");
+    AudioAttributes attrs =
+        new AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_NOTIFICATION)
+            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+            .build();
+    channel.setSound(sound, attrs);
+    manager.createNotificationChannel(channel);
   }
 
   private void requestPostNotifications() {
@@ -98,4 +135,4 @@ if (main.endsWith(".kt")) {
   }
 }
 
-console.log(`patch-android-notify: MainActivity requests POST_NOTIFICATIONS → ${main}`);
+console.log(`patch-android-notify: MainActivity + rest-end channel → ${javaPath}`);
