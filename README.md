@@ -2,47 +2,12 @@
 
 工作中记得歇一歇。在手机上安排每天的日程，空闲时晒晒太阳、看看窗外、慢慢呼吸。
 
-这是一款**面向手机的 Web 应用**（PWA）：一屏高度、底部导航、大按钮，可添加到主屏幕当 App 用。日程保存在本机浏览器，不需要登录。
-
-- 源码：https://github.com/tendokei421-eng/xieyixie
-- 独立使用（开启 Pages 后）：https://tendokei421-eng.github.io/xieyixie/
-
 ## 能做什么
 
-- **歇一歇**：看今天的松弛度，小人表情会跟着变；按当前节奏推荐一小段休息
-- **今天**：按日期添加、编辑、复制、删除日程（题目、起止时间、详细内容）
-- 有安排时才会标出可歇的空隙
-- 休息开始后全屏倒计时，结束后记入今天已歇的次数
-
-## 在手机上独立使用
-
-GitHub 会把软件发布成一个网页。第一次需要你在仓库里打开 Pages：
-
-1. 打开 [Pages 设置](https://github.com/tendokei421-eng/xieyixie/settings/pages)
-2. **Build and deployment → Source** 选 **GitHub Actions**
-3. 打开 [Actions](https://github.com/tendokei421-eng/xieyixie/actions) → **发布歇一歇** → 重新运行最近一次
-
-完成后用手机浏览器打开：
-
-**https://tendokei421-eng.github.io/xieyixie/**
-
-然后：
-
-- **iPhone / iPad**（Safari）：分享 → 添加到主屏幕
-- **Android**（Chrome）：菜单 ⋮ → 安装应用 / 添加到主屏幕
-
-加到主屏幕后，会以独立窗口打开，没有浏览器地址栏。日程只存在这台手机上。
-
-以后每次把代码推到 `main`，GitHub 会自动重新发布。
-
-也可以打成安卓安装包（`.apk`），步骤见 [docs/ANDROID.md](docs/ANDROID.md)。
-
-- 在 GitHub **Actions → 打包安卓 APK** 里点一次，就能下载调试版
-- 本机用 Android Studio 可以打带签名的正式包
-
-iPhone 仍用 Safari「添加到主屏幕」。这不是应用商店上架包（不走 App Store / 应用宝）。
-
-
+**歇一歇**：看今天的松弛度，小人表情会跟着变；按当前节奏推荐一小段休息
+**今天**：按日期添加、编辑、复制、删除日程（题目、起止时间、详细内容）
+有安排时才会标出可歇的空隙
+休息开始后全屏倒计时，结束后记入今天已歇的次数
 
 ## 技术栈
 
