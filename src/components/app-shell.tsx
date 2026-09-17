@@ -11,12 +11,29 @@ import { RestSession } from "@/components/rest-session";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const overlayOpen = useAppStore((s) => s.editor.open || !!s.activeRest);
+  const syncSystemDay = useAppStore((s) => s.syncSystemDay);
   const { keyboardOpen } = useVisualViewport();
   useLockBody(overlayOpen);
 
   useEffect(() => {
     void registerRestWorker();
   }, []);
+
+  useEffect(() => {
+    const tick = () => syncSystemDay();
+    tick();
+    const id = window.setInterval(tick, 15_000);
+    const onVis = () => {
+      if (document.visibilityState === "visible") tick();
+    };
+    document.addEventListener("visibilitychange", onVis);
+    window.addEventListener("focus", tick);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener("visibilitychange", onVis);
+      window.removeEventListener("focus", tick);
+    };
+  }, [syncSystemDay]);
 
   return (
     <div className="app-frame">
