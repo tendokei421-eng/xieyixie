@@ -12,6 +12,7 @@ type AppState = {
   hydrated: boolean;
   initialized: boolean;
   selectedDate: string;
+  followSystemDay: boolean;
   events: CalendarEvent[];
   restLogs: RestLog[];
   activeRest: ActiveRest | null;
@@ -19,6 +20,7 @@ type AppState = {
   permissionsAsked: boolean;
   setHydrated: (v: boolean) => void;
   setSelectedDate: (date: string) => void;
+  syncSystemDay: () => void;
   addEvent: (e: CalendarEvent) => void;
   updateEvent: (id: string, patch: Partial<CalendarEvent>) => void;
   removeEvent: (id: string) => void;
@@ -57,13 +59,25 @@ export const useAppStore = create<AppState>()(
       hydrated: false,
       initialized: false,
       selectedDate: dateKey(),
+      followSystemDay: true,
       events: [],
       restLogs: [],
       activeRest: null,
       editor: { open: false },
       permissionsAsked: false,
       setHydrated: (v) => set({ hydrated: v }),
-      setSelectedDate: (date) => set({ selectedDate: date }),
+      setSelectedDate: (date) =>
+        set({
+          selectedDate: date,
+          followSystemDay: date === dateKey(),
+        }),
+      syncSystemDay: () => {
+        const today = dateKey();
+        const s = get();
+        if (!s.followSystemDay) return;
+        if (s.selectedDate === today) return;
+        set({ selectedDate: today, followSystemDay: true });
+      },
       addEvent: (e) => set({ events: [...get().events, e] }),
       updateEvent: (id, patch) =>
         set({
@@ -80,7 +94,7 @@ export const useAppStore = create<AppState>()(
         const copy: CalendarEvent = {
           ...src,
           id: uid(),
-          title: src.title.endsWith("（副本）") ? src.title : `${src.title}（副本）`,
+          title: src.title.endsWith(（副本）") ? src.title : `${src.title}（副本）`,
         };
         set({ events: [...get().events, copy] });
         return copy;
@@ -91,8 +105,11 @@ export const useAppStore = create<AppState>()(
           .slice()
           .sort((a, b) => a.start.localeCompare(b.start) || a.end.localeCompare(b.end)),
       seedTodayIfEmpty: () => {
-        if (get().initialized) return;
-        set({ initialized: true, selectedDate: dateKey() });
+        if (get().initialized) {
+          get().syncSystemDay();
+          return;
+        }
+        set({ initialized: true, selectedDate: dateKey(), followSystemDay: true });
       },
       openCreate: (partial) => {
         const date = partial?.date ?? get().selectedDate;
@@ -119,7 +136,7 @@ export const useAppStore = create<AppState>()(
             draft: {
               ...src,
               id: uid(),
-              title: src.title.endsWith("（副本）") ? src.title : `${src.title}（副本）`,
+              title: src.title.endsWith(（副本）") ? src.title : `${src.title}（副本）`,
             },
           },
         });
@@ -183,6 +200,7 @@ export const useAppStore = create<AppState>()(
       partialize: (s) => ({
         initialized: s.initialized,
         selectedDate: s.selectedDate,
+        followSystemDay: s.followSystemDay,
         events: s.events,
         restLogs: s.restLogs,
         activeRest: s.activeRest,
