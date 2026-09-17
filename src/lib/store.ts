@@ -53,6 +53,8 @@ function defaultDraft(date: string): CalendarEvent {
   };
 }
 
+const COPY_MARK = "\uff08\u526f\u672c\uff09";
+
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -94,7 +96,7 @@ export const useAppStore = create<AppState>()(
         const copy: CalendarEvent = {
           ...src,
           id: uid(),
-          title: src.title.endsWith(（副本）") ? src.title : `${src.title}（副本）`,
+          title: src.title.endsWith(COPY_MARK) ? src.title : `${src.title}${COPY_MARK}`,
         };
         set({ events: [...get().events, copy] });
         return copy;
@@ -136,7 +138,7 @@ export const useAppStore = create<AppState>()(
             draft: {
               ...src,
               id: uid(),
-              title: src.title.endsWith(（副本）") ? src.title : `${src.title}（副本）`,
+              title: src.title.endsWith(COPY_MARK) ? src.title : `${src.title}${COPY_MARK}`,
             },
           },
         });
