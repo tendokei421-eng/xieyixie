@@ -8,36 +8,28 @@ export function computeRelaxation(opts: {
   nowHHmm: string;
   resting: boolean;
 }) {
-  let score = 40;
   const completed = opts.restLogs.filter((l) => l.completed);
-  score += Math.min(48, completed.length * 14);
+  const restTimes = completed.length;
 
-  if (opts.resting) score += 8;
+  // 0 次 25，1 次 50，2 次 75，3 次及以上 100
+  let score = 25 + Math.min(3, restTimes) * 25;
+
+  if (opts.resting && restTimes < 3) score += 10;
 
   const now = minutesOf(opts.nowHHmm);
   const working = opts.events.some(
     (e) => minutesOf(e.start) <= now && now < minutesOf(e.end),
   );
-  if (working) score -= 8;
+  if (working && restTimes < 3) score -= 6;
 
-  const last = completed
-    .map((l) => l.startedAt)
-    .sort()
-    .at(-1);
-  if (last) {
-    const elapsedMin = (Date.now() - new Date(last).getTime()) / 60000;
-    if (elapsedMin < 45) score += 10;
-    else if (elapsedMin > 150 && working) score -= 10;
-  } else if (now > 15 * 60) {
-    score -= 8;
-  }
+  if (restTimes === 0 && now > 15 * 60) score -= 6;
 
   let longestWork = 0;
   const sorted = [...opts.events].sort((a, b) => a.start.localeCompare(b.start));
   for (const e of sorted) {
     longestWork = Math.max(longestWork, minutesOf(e.end) - minutesOf(e.start));
   }
-  if (longestWork >= 120) score -= 6;
+  if (longestWork >= 120 && restTimes < 3) score -= 4;
 
   score = Math.max(0, Math.min(100, Math.round(score)));
   const mood = moodFromScore(score);
@@ -82,7 +74,7 @@ function moodCopy(mood: Mood, working: boolean, resting: boolean) {
     case "happy":
       return {
         label: "歇得真好",
-        hint: "今天的休息很到位。你可以慢慢的，不必一直加码。",
+        hint: "今天已经歇满三次，圆环满格了。可以慢慢的，不必一直加码。",
       };
   }
 }
