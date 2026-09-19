@@ -36,7 +36,7 @@ export function SplashScreen({
 
         <div className="mt-6 w-44">
           <div
-            className="h-1.5 overflow-hidden rounded-full bg-surface-2"
+            className="glass-soft h-1.5 overflow-hidden rounded-full"
             role="progressbar"
             aria-label="软件加载进度"
             aria-valuemin={0}
