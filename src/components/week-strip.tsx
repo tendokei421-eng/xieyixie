@@ -46,7 +46,7 @@ export function WeekStrip({
           <ChevronRight className="size-5" />
         </button>
       </div>
-      <div className="grid grid-cols-7 gap-1">
+      <div className="glass grid grid-cols-7 gap-1 rounded-xl p-1">
         {keys.map((key) => {
           const isSel = key === selected;
           const isToday = key === today;
@@ -58,7 +58,7 @@ export function WeekStrip({
               className={cn(
                 "flex min-h-12 flex-col items-center justify-center rounded-md px-0.5 py-1.5 transition-colors duration-150",
                 isSel
-                  ? "bg-primary text-primary-fg"
+                  ? "bg-primary text-primary-fg shadow-card"
                   : isToday
                     ? "bg-accent-soft text-accent-fg"
                     : "text-fg hover:bg-surface-2",
