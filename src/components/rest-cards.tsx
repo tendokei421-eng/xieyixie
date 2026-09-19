@@ -79,17 +79,17 @@ export function RestCards({
       {visible === null ? (
         <div className="flex flex-col gap-2" aria-hidden>
           {[0, 1, 2].map((i) => (
-            <div key={i} className="h-36 rounded-xl bg-surface shadow-card" />
+            <div key={i} className="glass h-36 rounded-xl" />
           ))}
         </div>
       ) : visible.length === 0 ? (
-        <p className="rounded-xl bg-surface px-4 py-6 text-center text-sm text-muted shadow-card">
+        <p className="glass rounded-xl px-4 py-6 text-center text-sm text-muted">
           这一段排得很满。下一处空隙再歇。
         </p>
       ) : (
         <ul key={batch} className="flex flex-col gap-2">
           {visible.map((a) => (
-            <li key={a.id} className="flex gap-3 rounded-xl bg-surface p-3.5 shadow-card">
+            <li key={a.id} className="glass flex gap-3 rounded-xl p-3.5">
               <div className="grid size-11 shrink-0 place-items-center rounded-md bg-primary-soft text-primary">
                 <KindIcon kind={a.kind} className="size-5" />
               </div>
