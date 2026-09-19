@@ -50,7 +50,7 @@ export function DayTimeline({
 
   if (items.length === 0) {
     return (
-      <div className="rounded-xl bg-surface px-5 py-8 text-center shadow-card">
+      <div className="glass rounded-xl px-5 py-8 text-center">
         <img
           src={MOOD_SRC.calm}
           alt=""
@@ -82,7 +82,7 @@ export function DayTimeline({
                   }
                   className={cn(
                     "flex min-h-12 w-full items-center gap-3 rounded-lg px-3 py-3 text-left transition-colors duration-150",
-                    active ? "bg-accent-soft" : "bg-accent-soft/50 hover:bg-accent-soft",
+                    active ? "bg-accent-soft" : "glass-soft hover:bg-accent-soft",
                     past && "opacity-55",
                   )}
                 >
@@ -110,7 +110,7 @@ export function DayTimeline({
             <li key={event.id}>
               <article
                 className={cn(
-                  "flex items-start gap-3 rounded-xl bg-surface px-3 py-3.5 shadow-card transition-shadow duration-150",
+                  "glass flex items-start gap-3 rounded-xl px-3 py-3.5 transition-shadow duration-150",
                   happening && "ring-2 ring-primary/35",
                   past && "opacity-70",
                 )}
