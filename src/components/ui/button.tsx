@@ -3,16 +3,16 @@ import { cn } from "@/lib/utils";
 
 const variants = {
   primary:
-    "bg-primary text-primary-fg hover:bg-primary/90 focus-visible:ring-primary/40",
+    "bg-primary text-primary-fg hover:bg-primary/90 focus-visible:ring-primary/40 shadow-card",
   secondary:
-    "bg-surface-2 text-fg hover:bg-primary-soft focus-visible:ring-primary/30",
+    "glass-soft text-fg hover:bg-primary-soft focus-visible:ring-primary/30",
   ghost: "bg-transparent text-fg hover:bg-surface-2 focus-visible:ring-primary/30",
   accent:
     "bg-accent text-accent-fg hover:bg-accent/90 focus-visible:ring-accent/40",
   danger:
     "bg-danger text-danger-fg hover:bg-danger/90 focus-visible:ring-danger/30",
   outline:
-    "bg-surface text-fg shadow-card hover:shadow-card-hover focus-visible:ring-primary/30",
+    "glass text-fg hover:shadow-card-hover focus-visible:ring-primary/30",
 } as const;
 
 const sizes = {
