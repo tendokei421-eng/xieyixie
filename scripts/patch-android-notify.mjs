@@ -24,6 +24,7 @@ const perms = [
   "android.permission.POST_NOTIFICATIONS",
   "android.permission.SCHEDULE_EXACT_ALARM",
   "android.permission.USE_EXACT_ALARM",
+  "android.permission.USE_FULL_SCREEN_INTENT",
   "android.permission.VIBRATE",
   "android.permission.WAKE_LOCK",
   "android.permission.RECEIVE_BOOT_COMPLETED",
@@ -131,7 +132,7 @@ if (!main) {
 }
 
 const src = readFileSync(main, "utf8");
-const pkgMatch = src.match(/package\s+([\w.]+)\s*;/) ?? src.match(/package\s+([\w.]+)/);
+const pkgMatch = src.match(/package\\s+([\\w.]+)\\s*;/) ?? src.match(/package\\s+([\\w.]+)/);
 const pkg = pkgMatch?.[1] ?? "com.tendokei.xieyixie";
 const javaDir = dirname(main);
 const javaPath = join(javaDir, "MainActivity.java");
@@ -207,7 +208,7 @@ import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
 
 public class RestEndReceiver extends BroadcastReceiver {
-  private static final String CHANNEL = "rest-end-v3";
+  public static final String CHANNEL = "rest-end-v4";
   private static final long[] VIBRATE = {500, 140, 500, 140, 500, 140, 500, 140, 500, 140, 800};
 
   @Override
@@ -218,7 +219,7 @@ public class RestEndReceiver extends BroadcastReceiver {
     if (body == null || body.isEmpty()) body = "这段休息结束了";
     ensureChannel(context);
     Intent open = new Intent(context, MainActivity.class);
-    open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
     int flags = PendingIntent.FLAG_UPDATE_CURRENT;
     if (Build.VERSION.SDK_INT >= 23) flags |= PendingIntent.FLAG_IMMUTABLE;
     PendingIntent content = PendingIntent.getActivity(context, 42102, open, flags);
@@ -232,6 +233,7 @@ public class RestEndReceiver extends BroadcastReceiver {
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setAutoCancel(true)
             .setContentIntent(content)
+            .setFullScreenIntent(content, true)
             .setVibrate(VIBRATE)
             .setSound(Uri.parse("android.resource://" + context.getPackageName() + "/raw/rest_done"));
     try {
@@ -242,16 +244,17 @@ public class RestEndReceiver extends BroadcastReceiver {
     playChime(context);
   }
 
-  private void ensureChannel(Context context) {
+  static void ensureChannel(Context context) {
     if (Build.VERSION.SDK_INT < 26) return;
     NotificationManager manager = context.getSystemService(NotificationManager.class);
     if (manager == null) return;
     NotificationChannel channel =
-        new NotificationChannel(CHANNEL, "休息结束", NotificationManager.IMPORTANCE_HIGH);
-    channel.setDescription("休息计时结束提醒");
+        new NotificationChannel(CHANNEL, "休息结束锁屏通知", NotificationManager.IMPORTANCE_HIGH);
+    channel.setDescription("休息计时结束时在锁屏显示提醒");
     channel.enableVibration(true);
     channel.setVibrationPattern(VIBRATE);
     channel.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
+    channel.setShowBadge(true);
     Uri sound = Uri.parse("android.resource://" + context.getPackageName() + "/raw/rest_done");
     AudioAttributes attrs =
         new AudioAttributes.Builder()
@@ -332,54 +335,89 @@ writeFileSync(
   `package ${pkg};
 
 import android.Manifest;
-import android.app.NotificationChannel;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.media.AudioAttributes;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.Settings;
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
+  private static final int REQ_POST = 42101;
+  private static final String PREFS = "xieyixie-notify";
+  private static final String KEY_LOCK_PROMPTED = "lock-screen-prompted";
+
   @Override
   public void onCreate(Bundle savedInstanceState) {
     registerPlugin(RestAlarmPlugin.class);
     super.onCreate(savedInstanceState);
-    createRestChannel();
+    RestEndReceiver.ensureChannel(this);
     requestPostNotifications();
   }
 
-  private void createRestChannel() {
-    if (Build.VERSION.SDK_INT < 26) return;
-    NotificationManager manager = getSystemService(NotificationManager.class);
-    if (manager == null) return;
-    NotificationChannel channel =
-        new NotificationChannel("rest-end-v3", "休息结束", NotificationManager.IMPORTANCE_HIGH);
-    channel.setDescription("休息计时结束提醒");
-    channel.enableVibration(true);
-    channel.setVibrationPattern(new long[] {500, 140, 500, 140, 500, 140, 500, 140, 500, 140, 800});
-    channel.setLockscreenVisibility(android.app.Notification.VISIBILITY_PUBLIC);
-    Uri sound = Uri.parse("android.resource://" + getPackageName() + "/raw/rest_done");
-    AudioAttributes attrs =
-        new AudioAttributes.Builder()
-            .setUsage(AudioAttributes.USAGE_ALARM)
-            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
-            .build();
-    channel.setSound(sound, attrs);
-    manager.createNotificationChannel(channel);
-  }
-
   private void requestPostNotifications() {
-    if (Build.VERSION.SDK_INT < 33) return;
+    if (Build.VERSION.SDK_INT < 33) {
+      promptLockScreenSettings();
+      return;
+    }
     if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
         == PackageManager.PERMISSION_GRANTED) {
+      promptLockScreenSettings();
       return;
     }
     ActivityCompat.requestPermissions(
-        this, new String[] {Manifest.permission.POST_NOTIFICATIONS}, 42101);
+        this, new String[] {Manifest.permission.POST_NOTIFICATIONS}, REQ_POST);
+  }
+
+  @Override
+  public void onRequestPermissionsResult(
+      int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    if (requestCode != REQ_POST) return;
+    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+      getWindow().getDecorView().postDelayed(this::promptLockScreenSettings, 400);
+    }
+  }
+
+  private void promptLockScreenSettings() {
+    SharedPreferences prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+    if (prefs.getBoolean(KEY_LOCK_PROMPTED, false)) return;
+    prefs.edit().putBoolean(KEY_LOCK_PROMPTED, true).apply();
+    if (isFinishing()) return;
+    new AlertDialog.Builder(this)
+        .setTitle("开启锁屏通知")
+        .setMessage("要在手机熄屏时也看到休息结束提醒，请把「休息结束锁屏通知」设为「显示通知及其内容」。")
+        .setPositiveButton("去开启", (d, w) -> openLockScreenSettings())
+        .setNegativeButton("稍后", null)
+        .setCancelable(true)
+        .show();
+  }
+
+  private void openLockScreenSettings() {
+    try {
+      Intent channel = new Intent(Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS);
+      channel.putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+      channel.putExtra(Settings.EXTRA_CHANNEL_ID, RestEndReceiver.CHANNEL);
+      startActivity(channel);
+      return;
+    } catch (Exception ignored) {
+    }
+    try {
+      Intent app = new Intent(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+      app.putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName());
+      startActivity(app);
+    } catch (Exception ignored) {
+      Intent fallback = new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
+      fallback.setData(Uri.parse("package:" + getPackageName()));
+      startActivity(fallback);
+    }
   }
 }
 `,
