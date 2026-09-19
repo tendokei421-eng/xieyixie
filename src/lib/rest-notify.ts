@@ -8,7 +8,7 @@ import { useAppStore } from "./store";
 export const VIBRATE_PATTERN = [500, 140, 500, 140, 500, 140, 500, 140, 500, 140, 800];
 const NOTICE_TAG = "xieyixie-rest-done";
 const NATIVE_NOTICE_ID = 42101;
-const REST_CHANNEL = "rest-end-v3";
+const REST_CHANNEL = "rest-end-v4";
 
 const RestAlarm = registerPlugin<{
   schedule: (opts: { at: number; title: string; body: string }) => Promise<void>;
@@ -47,8 +47,8 @@ async function armNativeNotifications() {
   try {
     await LocalNotifications.createChannel({
       id: REST_CHANNEL,
-      name: "休息结束",
-      description: "休息计时结束提醒",
+      name: "休息结束锁屏通知",
+      description: "休息计时结束时在锁屏显示提醒",
       importance: 5,
       visibility: 1,
       vibration: true,
