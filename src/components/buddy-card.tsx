@@ -27,14 +27,14 @@ export function BuddyCard({
   const offset = c * (1 - score / 100);
 
   return (
-    <section className="relative overflow-hidden rounded-2xl bg-surface p-5 shadow-card">
+    <section className="glass relative overflow-hidden rounded-2xl p-5">
       <div
         aria-hidden
-        className="pointer-events-none absolute -right-10 -top-16 size-48 rounded-full bg-accent/20"
+        className="pointer-events-none absolute -right-10 -top-16 size-48 rounded-full bg-accent/18"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute -left-8 bottom-0 size-40 rounded-full bg-primary/15"
+        className="pointer-events-none absolute -left-8 bottom-0 size-40 rounded-full bg-primary/14"
       />
 
       <div className="relative flex items-start justify-between gap-3">
@@ -52,7 +52,7 @@ export function BuddyCard({
               ? "bg-primary-soft text-primary"
               : hasEvents
                 ? "bg-accent-soft text-accent-fg"
-                : "bg-surface-2 text-muted",
+                : "glass-soft text-muted",
           )}
         >
           {working ? "日程进行中" : hasEvents ? "空闲可歇" : "还没排日程"}
