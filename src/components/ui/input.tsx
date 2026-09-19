@@ -2,7 +2,7 @@ import { type InputHTMLAttributes, type TextareaHTMLAttributes, forwardRef } fro
 import { cn } from "@/lib/utils";
 
 const field =
-  "w-full rounded-md bg-surface-2 px-3 text-base text-fg shadow-[inset_0_0_0_1px_color-mix(in_oklab,var(--color-fg)_8%,transparent)] placeholder:text-subtle outline-none transition-[box-shadow,background-color] duration-150 focus:bg-surface focus:shadow-[inset_0_0_0_2px_var(--color-primary)]";
+  "w-full rounded-md glass-soft px-3 text-base text-fg placeholder:text-subtle outline-none transition-[box-shadow,background-color] duration-150 focus:bg-surface focus:shadow-[inset_0_0_0_2px_var(--color-primary)]";
 
 export const Input = forwardRef<HTMLInputElement, InputHTMLAttributes<HTMLInputElement>>(
   function Input({ className, ...props }, ref) {
