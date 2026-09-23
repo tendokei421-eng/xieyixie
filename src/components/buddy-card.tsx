@@ -13,6 +13,7 @@ export function BuddyCard({
   restCount,
   working,
   hasEvents,
+  onFreeRest,
 }: {
   score: number;
   mood: Mood;
@@ -21,6 +22,7 @@ export function BuddyCard({
   restCount: number;
   working: boolean;
   hasEvents: boolean;
+  onFreeRest: () => void;
 }) {
   const r = 54;
   const c = 2 * Math.PI * r;
@@ -109,10 +111,14 @@ export function BuddyCard({
       </div>
 
       <div className="relative mt-4 flex items-center justify-center">
-        <span className="inline-flex min-h-9 items-center gap-1.5 rounded-full bg-accent-soft px-3 text-sm font-medium text-accent-fg">
+        <button
+          type="button"
+          onClick={onFreeRest}
+          className="inline-flex min-h-11 items-center gap-1.5 rounded-full bg-accent-soft px-3.5 text-sm font-medium text-accent-fg transition-transform duration-150 active:scale-[0.96]"
+        >
           <Activity className="size-3.5" />
-          今天已歇 {restCount} 次
-        </span>
+          今天已歇 {restCount} 次 · 自由休息
+        </button>
       </div>
     </section>
   );
