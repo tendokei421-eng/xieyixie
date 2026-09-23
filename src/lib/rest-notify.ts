@@ -1,7 +1,7 @@
 import { Capacitor, registerPlugin } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { publicUrl } from "./asset";
-import { activityById } from "./recommendations";
+import { restActivityById } from "./free-rest";
 import { playRestChime, primeRestChime, startKeepAlive, stopKeepAlive } from "./rest-chime";
 import { useAppStore } from "./store";
 
@@ -224,7 +224,7 @@ export function vibrateRestDone() {
 }
 
 function payloadFor(active: { activityId: string; startedAt: string; durationMin: number }) {
-  const activity = activityById(active.activityId);
+  const activity = restActivityById(active.activityId);
   return {
     endAt: new Date(active.startedAt).getTime() + active.durationMin * 60_000,
     title: "歇一歇",
