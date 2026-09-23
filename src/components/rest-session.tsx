@@ -70,8 +70,6 @@ export function RestSession() {
   const m = Math.floor(remainingSec / 60);
   const s = remainingSec % 60;
   const progress = active.durationMin <= 0 ? 1 : 1 - remainingMs / (active.durationMin * 60_000);
-  const lockAlerts =
-    typeof Notification !== "undefined" && Notification.permission === "granted";
 
   return (
     <div className="rest-screen">
@@ -96,11 +94,6 @@ export function RestSession() {
         <h2 id="rest-title" className="text-center font-display text-xl font-semibold">
           {activity?.title ?? "休息一下"}
         </h2>
-        {activity ? (
-          <p className="mt-1 text-center text-sm leading-relaxed text-muted">
-            {activity.detail}
-          </p>
-        ) : null}
 
         <p className="mt-8 text-center font-display text-5xl font-semibold tabular-nums tracking-tight">
           {String(m).padStart(2, "0")}:{String(s).padStart(2, "0")}
@@ -111,11 +104,6 @@ export function RestSession() {
             style={{ width: `${Math.min(100, progress * 100)}%` }}
           />
         </div>
-        <p className="mt-3 text-center text-xs leading-relaxed text-subtle">
-          {lockAlerts
-            ? "放到后台或锁屏，到点会震动、响五秒铃，熄屏在锁屏通知，亮屏则出横幅"
-            : "放到后台也可以继续计时。允许通知后，锁屏和横幅也会提醒"}
-        </p>
 
         <div className="mt-auto flex gap-2 pt-6">
           <Button
