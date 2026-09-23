@@ -105,7 +105,7 @@ export function BuddyCard({
         </div>
       </div>
 
-      <div className="relative mt-4 flex min-h-16 flex-col items-center justify-center text-center">
+      <div className="relative -mt-1 flex flex-col items-center text-center">
         <h2 className="font-display text-xl font-semibold leading-tight">{label}</h2>
         <p className="mx-auto mt-1 max-w-[28ch] text-sm leading-relaxed text-muted">{hint}</p>
       </div>
