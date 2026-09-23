@@ -61,10 +61,10 @@ export function BuddyCard({
         </span>
       </div>
 
-      <div className="relative mx-auto mt-2 grid place-items-center">
+      <div className="relative mx-auto mt-2 grid h-44 w-44 place-items-center">
         <svg
           viewBox="0 0 128 128"
-          className="absolute size-44 -rotate-90 text-primary"
+          className="absolute inset-0 size-44 -rotate-90 text-primary"
           aria-hidden
         >
           <circle
@@ -105,8 +105,8 @@ export function BuddyCard({
         </div>
       </div>
 
-      <div className="relative mt-1 text-center">
-        <h2 className="font-display text-xl font-semibold">{label}</h2>
+      <div className="relative mt-4 flex min-h-16 flex-col items-center justify-center text-center">
+        <h2 className="font-display text-xl font-semibold leading-tight">{label}</h2>
         <p className="mx-auto mt-1 max-w-[28ch] text-sm leading-relaxed text-muted">{hint}</p>
       </div>
 
