@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { activityById } from "@/lib/recommendations";
+import { restActivityById } from "@/lib/free-rest";
 import { playRestChime, startKeepAlive, stopRestChime } from "@/lib/rest-chime";
 import {
   announceRestFinished,
@@ -62,14 +62,14 @@ export function RestSession() {
   }, [active, now]);
 
   if (!active) return null;
-  const activity = activityById(active.activityId);
+  const activity = restActivityById(active.activityId);
   const start = new Date(active.startedAt).getTime();
   const end = start + active.durationMin * 60_000;
   const remainingMs = Math.max(0, end - now);
   const remainingSec = Math.ceil(remainingMs / 1000);
   const m = Math.floor(remainingSec / 60);
   const s = remainingSec % 60;
-  const progress = 1 - remainingMs / (active.durationMin * 60_000);
+  const progress = active.durationMin <= 0 ? 1 : 1 - remainingMs / (active.durationMin * 60_000);
   const lockAlerts =
     typeof Notification !== "undefined" && Notification.permission === "granted";
 
