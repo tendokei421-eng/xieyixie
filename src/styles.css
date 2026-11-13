@@ -1,24 +1,24 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #e8f2f8;
-  --color-surface: #f7fbffd9;
-  --color-surface-2: #dff0f8b8;
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-2: #f4f8fb;
   --color-fg: #3a312c;
   --color-muted: #7d7168;
   --color-subtle: #a89b92;
   --color-primary: #4b9ed1;
   --color-primary-fg: #ffffff;
-  --color-primary-soft: #d5eaf6cc;
+  --color-primary-soft: #d5eaf6;
   --color-accent: #e8c03a;
   --color-accent-fg: #3a312c;
-  --color-accent-soft: #f8e9b0cc;
+  --color-accent-soft: #f8e9b0;
   --color-buddy: #bee7fb;
   --color-ink: #5a4336;
   --color-danger: #c85a5a;
   --color-danger-fg: #fff7f5;
   --color-ok: #4c9a6e;
-  --color-border: #ffffff99;
+  --color-border: #e2e8ee;
 
   --font-sans: "Noto Sans SC", "Quicksand", ui-sans-serif, system-ui, sans-serif;
   --font-display: "Quicksand", "Noto Sans SC", ui-sans-serif, system-ui, sans-serif;
@@ -31,13 +31,13 @@
   --radius-2xl: 2rem;
 
   --shadow-card:
-    inset 0 1px 0 color-mix(in oklab, white 78%, transparent),
-    0 0 0 1px color-mix(in oklab, white 55%, var(--color-primary) 12%),
-    0 10px 28px color-mix(in oklab, var(--color-primary) 16%, transparent);
+    0 0 0 1px color-mix(in oklab, var(--color-fg) 6%, transparent),
+    0 1px 2px color-mix(in oklab, var(--color-fg) 4%, transparent),
+    0 8px 24px color-mix(in oklab, var(--color-primary) 10%, transparent);
   --shadow-card-hover:
-    inset 0 1px 0 color-mix(in oklab, white 86%, transparent),
-    0 0 0 1px color-mix(in oklab, white 70%, var(--color-primary) 16%),
-    0 16px 36px color-mix(in oklab, var(--color-primary) 20%, transparent);
+    0 0 0 1px color-mix(in oklab, var(--color-fg) 8%, transparent),
+    0 2px 6px color-mix(in oklab, var(--color-fg) 6%, transparent),
+    0 12px 28px color-mix(in oklab, var(--color-primary) 14%, transparent);
 
   --ease-smooth-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -49,7 +49,7 @@
     -moz-osx-font-smoothing: grayscale;
     -webkit-text-size-adjust: 100%;
     text-size-adjust: 100%;
-    background: var(--color-bg);
+    background: #ffffff;
     color: var(--color-fg);
     overflow: hidden;
     height: 100%;
@@ -62,11 +62,7 @@
     height: 100%;
     height: 100dvh;
     margin: 0;
-    background:
-      radial-gradient(120% 70% at 12% -10%, color-mix(in oklab, #fff 82%, transparent), transparent 58%),
-      radial-gradient(90% 55% at 108% 8%, color-mix(in oklab, var(--color-primary) 28%, transparent), transparent 52%),
-      radial-gradient(80% 50% at 80% 108%, color-mix(in oklab, var(--color-accent) 22%, transparent), transparent 55%),
-      var(--color-bg);
+    background: #ffffff;
     color: var(--color-fg);
     font-family: var(--font-sans);
     overscroll-behavior: none;
@@ -120,17 +116,13 @@
 
 @layer components {
   .glass {
-    background: color-mix(in oklab, white 58%, transparent);
+    background: #ffffff;
     box-shadow: var(--shadow-card);
-    -webkit-backdrop-filter: blur(22px) saturate(165%);
-    backdrop-filter: blur(22px) saturate(165%);
   }
 
   .glass-soft {
-    background: color-mix(in oklab, white 42%, transparent);
+    background: #f4f8fb;
     box-shadow: var(--shadow-card);
-    -webkit-backdrop-filter: blur(16px) saturate(150%);
-    backdrop-filter: blur(16px) saturate(150%);
   }
 
   .app-frame {
@@ -139,7 +131,7 @@
     height: 100dvh;
     max-height: 100dvh;
     overflow: hidden;
-    background: transparent;
+    background: #ffffff;
     color: var(--color-fg);
   }
 
@@ -167,10 +159,8 @@
 
   .app-tabbar {
     flex-shrink: 0;
-    border-top: 1px solid color-mix(in oklab, white 62%, transparent);
-    background: color-mix(in oklab, white 52%, transparent);
-    -webkit-backdrop-filter: blur(22px) saturate(165%);
-    backdrop-filter: blur(22px) saturate(165%);
+    border-top: 1px solid var(--color-border);
+    background: #ffffff;
     padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
   }
 
@@ -185,9 +175,7 @@
     overscroll-behavior: contain;
     border-top-left-radius: var(--radius-2xl);
     border-top-right-radius: var(--radius-2xl);
-    background: color-mix(in oklab, white 72%, transparent);
-    -webkit-backdrop-filter: blur(28px) saturate(170%);
-    backdrop-filter: blur(28px) saturate(170%);
+    background: #ffffff;
     padding: 0.75rem 1.25rem max(1.25rem, env(safe-area-inset-bottom, 0px));
     box-shadow: var(--shadow-card-hover);
   }
@@ -201,10 +189,7 @@
     height: 100dvh;
     overflow: hidden;
     overscroll-behavior: none;
-    background:
-      radial-gradient(90% 60% at 50% -10%, color-mix(in oklab, #fff 70%, transparent), transparent 58%),
-      radial-gradient(80% 50% at 100% 100%, color-mix(in oklab, var(--color-primary) 22%, transparent), transparent 55%),
-      color-mix(in oklab, var(--color-bg) 82%, white);
+    background: #ffffff;
   }
 }
 
@@ -299,12 +284,15 @@
   place-items: center;
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px)
     env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
-  background:
-    radial-gradient(90% 60% at 50% 20%, color-mix(in oklab, #fff 68%, transparent), transparent 60%),
-    var(--color-bg);
-  color: var(--color-fg);
+  background: #4b9ed1;
+  color: #ffffff;
   opacity: 1;
   transition: opacity 280ms var(--ease-smooth-out);
+}
+
+.splash-overlay .text-muted,
+.splash-overlay .text-subtle {
+  color: color-mix(in oklab, #ffffff 82%, transparent);
 }
 
 .splash-overlay.is-leaving {
@@ -330,16 +318,5 @@
   }
   .splash-fill {
     transition: none;
-  }
-}
-
-@media (prefers-reduced-transparency: reduce) {
-  .glass,
-  .glass-soft,
-  .app-tabbar,
-  .sheet-bottom {
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-    background: #f7fbff;
   }
 }
