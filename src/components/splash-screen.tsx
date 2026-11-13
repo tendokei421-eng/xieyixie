@@ -31,12 +31,12 @@ export function SplashScreen({
           alt=""
           className="buddy-float h-40 w-auto object-contain"
         />
-        <p className="mt-2 font-display text-2xl font-semibold tracking-tight">歇一歇</p>
-        <p className="mt-1 text-sm text-muted">{stageLabel(pct)}</p>
+        <p className="mt-2 font-display text-2xl font-semibold tracking-tight text-white">歇一歇</p>
+        <p className="mt-1 text-sm text-white/80">{stageLabel(pct)}</p>
 
         <div className="mt-6 w-44">
           <div
-            className="glass-soft h-1.5 overflow-hidden rounded-full"
+            className="h-1.5 overflow-hidden rounded-full bg-white/30"
             role="progressbar"
             aria-label="软件加载进度"
             aria-valuemin={0}
@@ -44,11 +44,11 @@ export function SplashScreen({
             aria-valuenow={Math.round(pct)}
           >
             <div
-              className="splash-fill h-full rounded-full bg-primary"
+              className="splash-fill h-full rounded-full bg-white"
               style={{ transform: `scaleX(${pct / 100})` }}
             />
           </div>
-          <p className="mt-2 text-center text-xs tabular-nums text-subtle">
+          <p className="mt-2 text-center text-xs tabular-nums text-white/70">
             {Math.round(pct)}%
           </p>
         </div>
