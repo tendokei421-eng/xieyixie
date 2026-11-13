@@ -19,7 +19,7 @@ export const Route = createRootRoute({
           "width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content",
       },
       { title: APP_NAME },
-      { name: "theme-color", content: "#4b9ed1" },
+      { name: "theme-color", content: "#ffffff" },
       { name: "format-detection", content: "telephone=no" },
       {
         name: "description",
